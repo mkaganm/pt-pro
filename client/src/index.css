@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Touch-friendly button sizes */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-all duration-200 min-h-[48px];
+  }
+
+  .btn-primary {
+    @apply bg-primary text-dark hover:bg-primary-400 active:bg-primary-600;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-100 text-white hover:bg-dark-50 active:bg-dark-200 border border-dark-50;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-500 active:bg-red-700;
+  }
+
+  .card {
+    @apply bg-dark-300 rounded-xl p-4 border border-dark-100;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-400 mb-1;
+  }
+
+  /* Status badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-scheduled {
+    @apply bg-blue-500/20 text-blue-400;
+  }
+
+  .badge-completed {
+    @apply bg-green-500/20 text-green-400;
+  }
+
+  .badge-noshow {
+    @apply bg-red-500/20 text-red-400;
+  }
+
+  .badge-cancelled {
+    @apply bg-gray-500/20 text-gray-400;
+  }
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms, transform 200ms;
+}
