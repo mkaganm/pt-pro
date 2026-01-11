@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PT Pro Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6", // Electric Blue
+                        "primary-hover": "#2563eb",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a", // Deep dark blue/black (Slate 900)
+                        "card-dark": "#1e293b", // Slate 800
+                        "accent-dark": "#334155", // Slate 700
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }.no-scrollbar::-webkit-scrollbar { display: none; }.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white h-screen overflow-hidden flex">
+<aside class="w-64 bg-background-dark border-r border-white/10 hidden md:flex flex-col h-full shrink-0 z-20">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 rounded-full bg-gradient-to-tr from-primary to-cyan-400 flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white font-bold">fitness_center</span>
+</div>
+<div>
+<h1 class="text-white text-lg font-bold tracking-tight">PT Pro</h1>
+<p class="text-primary text-xs font-medium">Coach Portal</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary border border-primary/10 transition-colors group" href="#">
+<span class="material-symbols-outlined fill-1">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium text-sm">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-medium text-sm">Schedule</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-medium text-sm">Finances</span>
+</a>
+<div class="flex-1"></div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-white/10">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors">
+<div class="size-10 rounded-full bg-cover bg-center ring-2 ring-primary/50" data-alt="Portrait of a male fitness coach smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDNOl3IGTHxA_TM0jc8Q5BjEfn6bspKAkSvYJ_tp4ul_8St1YK1OKXwAcWl0IOZYxgZ8Zdxart_ygrZulWWJovHjTUi0S92TWtkPBHzOk7jWOCaLuxuvboYHdwNJJy7MszerjLWSoVrdwzqXk6CyTAdRI9mXWZ2j2WXDLnJOWRYfuJ13GZF9CPnRgyb5fHlnIS-jiKHkiDVLX9XStPPrJ6HZC6oxJZq1H3PBj14IYGEK7rMvqz0ZexAfmmhrA3hkGsHeN2UqPqLkvsu')"></div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-semibold truncate">Coach Mike</span>
+<span class="text-xs text-gray-400 truncate">Pro Plan</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 h-full overflow-y-auto relative no-scrollbar pb-24 md:pb-0">
+<div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+<div class="max-w-7xl mx-auto p-4 md:p-8 flex flex-col gap-6 md:gap-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 relative z-10">
+<div class="flex flex-col gap-1">
+<p class="text-primary font-medium text-sm uppercase tracking-wider">Wednesday, Oct 25</p>
+<h2 class="text-3xl md:text-4xl font-black text-white leading-tight">Good morning, Coach</h2>
+<p class="text-gray-400">You have <span class="text-white font-bold">3 sessions</span> remaining today.</p>
+</div>
+<div class="hidden md:flex items-center gap-3">
+<button class="size-10 rounded-full bg-card-dark border border-white/10 text-white flex items-center justify-center hover:bg-white/10 transition-colors relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full"></span>
+</button>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[20px]">search</span>
+<input class="bg-card-dark border border-white/10 rounded-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary w-64 placeholder-gray-500" placeholder="Search clients..." type="text"/>
+</div>
+</div>
+<div class="md:hidden w-full flex gap-3">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[20px]">search</span>
+<input class="bg-card-dark border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary w-full placeholder-gray-500" placeholder="Search..." type="text"/>
+</div>
+<button class="size-11 shrink-0 rounded-xl bg-card-dark border border-white/10 text-white flex items-center justify-center relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-3 right-3 size-2 bg-primary rounded-full"></span>
+</button>
+</div>
+</div>
+<div class="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+<div class="min-w-[85vw] md:min-w-0 snap-center bg-card-dark border border-white/5 rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden group hover:border-primary/30 transition-colors">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">fitness_center</span>
+</div>
+<div>
+<p class="text-gray-400 text-sm font-medium">Sessions Today</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl font-bold text-white">3</span>
+<span class="text-gray-500 text-sm">/ 8 Total</span>
+</div>
+</div>
+<div class="w-full bg-white/10 rounded-full h-1.5 mt-auto">
+<div class="bg-primary h-1.5 rounded-full" style="width: 62%"></div>
+</div>
+</div>
+<div class="min-w-[85vw] md:min-w-0 snap-center bg-card-dark border border-white/5 rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden group hover:border-primary/30 transition-colors">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">group</span>
+</div>
+<div>
+<p class="text-gray-400 text-sm font-medium">Active Clients</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl font-bold text-white">24</span>
+<span class="text-primary text-sm font-medium bg-primary/10 px-2 py-0.5 rounded-md">+2 new</span>
+</div>
+</div>
+<div class="flex -space-x-2 mt-auto">
+<img alt="Client Avatar" class="inline-block size-8 rounded-full ring-2 ring-background-dark object-cover" data-alt="Portrait of female client" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwbFxvj3EZbLdAJTgU8_F5zA7S-Nizk5IXe-7USgMmPh-TR7PWxscEQCpibL5-2YTX65jmp3R3Vl0s1O10MpC33rLBhO_FrjviDsYq2HVHoyzmX4-RG7j-15fJv8Y1IQAlfwjPLJNMU_uYOvpFLn98a_9UnMYbmqc-JdNd8JUSn7P3w241UlOOPArYwuq607TxATeDQlo-2ACHXnZ_ItAmaHZl3G8uFxg_WO7o4jx9DFqAChUMd5N8kQjHKSwd5yRSx1ZXhTj-mi_9"/>
+<img alt="Client Avatar" class="inline-block size-8 rounded-full ring-2 ring-background-dark object-cover" data-alt="Portrait of male client" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYcjuQZd-ckwtVJTRS38npZ9bQVxZYAX1MJlzAbYjaa89NH57CnoQ5E6D9c-cuX4OlbcLiEo0pg0HJYGQGABmBNzU1WISESOvXdLo3P75AS6BzhbjKWwLhh07Q10T0Xye7W1V1bvqtwwhb2rInSKO3RRvPu6zOohMiE_GuEwS19dYQVZaGWAGpXg1BqTU_RK14XpOsgrWRRHVDf59TyNgCEoej_yFPBdtMdNFNYDejVLNcB3ZibnBHnxFrPNCcsE8n59gnbdciwddi"/>
+<img alt="Client Avatar" class="inline-block size-8 rounded-full ring-2 ring-background-dark object-cover" data-alt="Portrait of female client" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8tSNMvieLvzsiPhnfpqbllTU4yrwMHrJPK0OmNTFsXS6iJW_9npmmq6BKjhDPrpozhBRwbFABpg4k2Q3_XBQnZWEqe4nUV1-8WAMz9BuLehiZNFDdLIDcF1BW9cpnJ_Z4BP0ijxOPy3NkuX3YKY-8RfR6BCu5S6SlX_W61POARWDy8L8533hvdYve8CGAJ0Ub6zRSgP1GyjlqxZ3MVOTG50eZvlyCn6WoZtQXKkbZt3FVuRSDFeob5s7rXvPguZjzpoEjAp18Q4df"/>
+<div class="size-8 rounded-full ring-2 ring-background-dark bg-accent-dark flex items-center justify-center text-xs text-white font-medium">+21</div>
+</div>
+</div>
+<div class="min-w-[85vw] md:min-w-0 snap-center bg-card-dark border border-white/5 rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden group hover:border-primary/30 transition-colors">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">payments</span>
+</div>
+<div>
+<p class="text-gray-400 text-sm font-medium">Revenue This Week</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl font-bold text-white">$1,200</span>
+<span class="text-primary text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                            12%
+                        </span>
+</div>
+</div>
+<div class="flex items-end gap-1 h-8 mt-auto opacity-50">
+<div class="bg-primary w-1/6 rounded-t-sm h-3"></div>
+<div class="bg-primary w-1/6 rounded-t-sm h-5"></div>
+<div class="bg-primary w-1/6 rounded-t-sm h-4"></div>
+<div class="bg-primary w-1/6 rounded-t-sm h-7"></div>
+<div class="bg-primary w-1/6 rounded-t-sm h-5"></div>
+<div class="bg-white w-1/6 rounded-t-sm h-8 opacity-100"></div>
+</div>
+</div>
+</div>
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-xl font-bold text-white">Upcoming Clients</h3>
+<a class="text-sm text-primary hover:text-white transition-colors font-medium" href="#">View Schedule -&gt;</a>
+</div>
+<div class="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-x-auto snap-x no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+<div class="min-w-[85vw] md:min-w-0 snap-center bg-card-dark border border-white/5 rounded-2xl p-5 flex items-center gap-4 hover:border-primary/50 transition-all cursor-pointer group shadow-lg shadow-black/20">
+<div class="relative shrink-0">
+<div class="size-16 rounded-full bg-cover bg-center" data-alt="Portrait of Sarah J" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuALeQJEYDzsfrHFb90m65elQvk1TXJw8rKJrOvFVgV-sEi6-YD_JwYWmNHGQ1zr8qIeXYh1KIgF5pYSgVJZ3F_zgB9MhT3viIerFwt2tAjr2rNyQUyV6zdlxPyNtLHx3--VSScMLay5XdV8DcoOgIpAL-4KDQeAJA5uhY245Is1I5Y0Am4mgkJbuASOk8XqmV0ouC6R-0bwiDKXYPXtX4jLWEZNVPbWmJhUnk_OwbSTpdPnIcm2Un0K6R9gPfysbgMpmojuEqrxsjEG');"></div>
+<div class="absolute -bottom-1 -right-1 bg-background-dark p-1 rounded-full">
+<div class="size-3 bg-green-500 rounded-full border-2 border-background-dark"></div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-white font-bold truncate">Sarah J.</h4>
+<span class="text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded-md">10:00 AM</span>
+</div>
+<p class="text-gray-400 text-sm truncate mt-1">Leg Day Focus</p>
+<div class="flex items-center gap-2 mt-3">
+<button class="bg-primary hover:bg-primary-hover text-white text-xs font-bold px-3 py-1.5 rounded-lg flex-1 transition-colors">Check-in</button>
+<button class="bg-white/5 hover:bg-white/10 text-white p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+<div class="min-w-[85vw] md:min-w-0 snap-center bg-card-dark border border-white/5 rounded-2xl p-5 flex items-center gap-4 hover:border-primary/50 transition-all cursor-pointer group shadow-lg shadow-black/20">
+<div class="relative shrink-0">
+<div class="size-16 rounded-full bg-cover bg-center" data-alt="Portrait of Mike T" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAPaR0TGnt5Nezmlj4rWey4c-b4XrYCFwBoGiOgYFqhX6trcJ6qdEExbsUWeLX2cCmqkBuSzOI-jyp5Cn46hKKHJPtwtZ8jOj_4bpDeU5i1YsNAnu0ij4BAVJOuCd2SDUm5oxXrgd17zlxHOpm9QMJI4TGGoHXaE3b_oZRsHSbujvPyeuGm15VU9ZFDQj-qQ7qdoo6USzypyrDOKLvlb52ecjYowLY0TDDSdwKnDFt3k3bxaJW7ifAVHJ-PdmRbfhdzXe2Qc0JXiRcL');"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-white font-bold truncate">Mike T.</h4>
+<span class="text-gray-400 text-xs font-bold bg-white/5 px-2 py-1 rounded-md">1:00 PM</span>
+</div>
+<p class="text-gray-400 text-sm truncate mt-1">HIIT &amp; Cardio</p>
+<div class="flex items-center gap-2 mt-3">
+<button class="bg-white/5 hover:bg-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex-1 transition-colors border border-white/10">Details</button>
+<button class="bg-white/5 hover:bg-white/10 text-white p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+<div class="min-w-[85vw] md:min-w-0 snap-center bg-card-dark border border-white/5 rounded-2xl p-5 flex items-center gap-4 hover:border-primary/50 transition-all cursor-pointer group shadow-lg shadow-black/20">
+<div class="relative shrink-0">
+<div class="size-16 rounded-full bg-cover bg-center" data-alt="Portrait of Emma W" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAg8aTi7VupjghzdpDw7Ssutf8sRFw3eO-eR4PIGRNMj8xo4ngexihdZT99hQ7_8TZeZIpYMAcz3CYGBXhsp4fnRDZ1Hh6I9LvPGYASNpgZMF2UDTAI5lKqlG4xqy2YuAkopXRZqby2vQaL_ggKq3TkwbwvMX6ITmPa_L2RAag_6w3ERkEMwPPSDKTk6JkEgRnfy4wKUkb9aXxYy9nql0tCrx5tBau8nzpPZvpo7AXAlVndgzfOeaUyln7CRf2JZak-7M-BMefDqt2D');"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-white font-bold truncate">Emma W.</h4>
+<span class="text-gray-400 text-xs font-bold bg-white/5 px-2 py-1 rounded-md">3:30 PM</span>
+</div>
+<p class="text-gray-400 text-sm truncate mt-1">Initial Consultation</p>
+<div class="flex items-center gap-2 mt-3">
+<button class="bg-white/5 hover:bg-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex-1 transition-colors border border-white/10">Prepare</button>
+<button class="bg-white/5 hover:bg-white/10 text-white p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-4">
+<h3 class="text-xl font-bold text-white">Quick Actions</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<button class="bg-accent-dark hover:bg-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all border border-transparent hover:border-primary/30 group h-32">
+<div class="size-10 rounded-full bg-background-dark flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">fitness_center</span>
+</div>
+<span class="text-sm font-medium text-white">Assign Program</span>
+</button>
+<button class="bg-accent-dark hover:bg-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all border border-transparent hover:border-primary/30 group h-32">
+<div class="size-10 rounded-full bg-background-dark flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">send</span>
+</div>
+<span class="text-sm font-medium text-white">Message Blast</span>
+</button>
+<button class="bg-accent-dark hover:bg-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all border border-transparent hover:border-primary/30 group h-32">
+<div class="size-10 rounded-full bg-background-dark flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">attach_money</span>
+</div>
+<span class="text-sm font-medium text-white">Log Payment</span>
+</button>
+<button class="bg-accent-dark hover:bg-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all border border-transparent hover:border-primary/30 group h-32">
+<div class="size-10 rounded-full bg-background-dark flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">note_add</span>
+</div>
+<span class="text-sm font-medium text-white">Add Note</span>
+</button>
+</div>
+</section>
+<div class="h-20 md:hidden"></div>
+</div>
+</main>
+<div class="fixed bottom-24 md:bottom-8 right-6 md:right-8 z-30 group">
+<button class="size-14 md:size-16 rounded-full bg-primary hover:bg-primary-hover text-white shadow-xl shadow-primary/30 flex items-center justify-center transition-all transform group-hover:scale-110 group-active:scale-95">
+<span class="material-symbols-outlined text-3xl md:text-4xl">add</span>
+</button>
+<div class="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-background-dark text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg hidden md:block">
+        Quick Log Session
+    </div>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-background-dark/95 backdrop-blur-md border-t border-white/10 z-40 pb-5">
+<div class="flex justify-around items-center h-16 px-2">
+<a class="flex flex-col items-center justify-center w-full h-full text-primary gap-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white transition-colors gap-1" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[10px] font-medium">Clients</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white transition-colors gap-1" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="text-[10px] font-medium">Schedule</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-white transition-colors gap-1" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+
+</body></html>
