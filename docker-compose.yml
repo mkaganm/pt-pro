@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # PostgreSQL Database
+  # ==========================================
+  db:
+    image: postgres:16-alpine
+    container_name: ptmate_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-ptmate}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ptmate_secret}
+      POSTGRES_DB: ${DB_NAME:-ptmate_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ptmate}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ptmate_network
+
+  # ==========================================
+  # Go Backend (Gin + GORM)
+  # ==========================================
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: ptmate_backend
+    restart: unless-stopped
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-ptmate}
+      - DB_PASSWORD=${DB_PASSWORD:-ptmate_secret}
+      - DB_NAME=${DB_NAME:-ptmate_db}
+      - GIN_MODE=debug
+      - PORT=8080
+    volumes:
+      - ./server:/app
+      - go_modules:/go/pkg/mod
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ptmate_network
+
+  # ==========================================
+  # React Frontend (Vite)
+  # ==========================================
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: ptmate_frontend
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - ptmate_network
+
+volumes:
+  postgres_data:
+    name: ptmate_postgres_data
+  go_modules:
+    name: ptmate_go_modules
+
+networks:
+  ptmate_network:
+    driver: bridge
