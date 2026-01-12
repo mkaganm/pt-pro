@@ -10,6 +10,7 @@ import (
 // Client represents a personal training client
 type Client struct {
 	ID               uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	TrainerID        uuid.UUID      `gorm:"type:uuid;not null;index" json:"trainer_id"`
 	FirstName        string         `gorm:"size:100;not null" json:"first_name"`
 	LastName         string         `gorm:"size:100;not null" json:"last_name"`
 	Phone            string         `gorm:"size:20" json:"phone"`

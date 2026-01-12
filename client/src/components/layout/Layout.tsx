@@ -1,13 +1,15 @@
 import { ReactNode, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
     Calendar,
     Menu,
     X,
-    Dumbbell
+    Dumbbell,
+    LogOut
 } from 'lucide-react';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface LayoutProps {
     children: ReactNode;
@@ -21,7 +23,14 @@ const navItems = [
 
 export default function Layout({ children }: LayoutProps) {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { trainer, logout } = useAuthStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <div className="min-h-screen bg-dark">
@@ -44,8 +53,8 @@ export default function Layout({ children }: LayoutProps) {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                        ? 'bg-primary/10 text-primary'
-                                        : 'text-gray-400 hover:bg-dark-200 hover:text-white'
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'text-gray-400 hover:bg-dark-200 hover:text-white'
                                     }`}
                             >
                                 <item.icon className="w-5 h-5" />
@@ -54,6 +63,32 @@ export default function Layout({ children }: LayoutProps) {
                         );
                     })}
                 </nav>
+
+                {/* User & Logout */}
+                <div className="px-4 py-4 border-t border-dark-100">
+                    {trainer && (
+                        <div className="flex items-center gap-3 px-4 py-2 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                <span className="text-primary text-sm font-semibold">
+                                    {trainer.first_name.charAt(0)}{trainer.last_name.charAt(0)}
+                                </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">
+                                    {trainer.first_name} {trainer.last_name}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">{trainer.email}</p>
+                            </div>
+                        </div>
+                    )}
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:bg-dark-200 hover:text-white transition-all duration-200"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Logout</span>
+                    </button>
+                </div>
             </aside>
 
             {/* Mobile Header */}
@@ -84,8 +119,8 @@ export default function Layout({ children }: LayoutProps) {
                                     to={item.path}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-gray-400 hover:bg-dark-200 hover:text-white'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-gray-400 hover:bg-dark-200 hover:text-white'
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5" />
@@ -93,6 +128,13 @@ export default function Layout({ children }: LayoutProps) {
                                 </Link>
                             );
                         })}
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:bg-dark-200 hover:text-white transition-all duration-200"
+                        >
+                            <LogOut className="w-5 h-5" />
+                            <span className="font-medium">Logout</span>
+                        </button>
                     </nav>
                 )}
             </header>

@@ -1,6 +1,7 @@
 // Client types
 export interface Client {
     id: string;
+    trainer_id: string;
     first_name: string;
     last_name: string;
     phone: string;
@@ -90,4 +91,30 @@ export interface DashboardData {
         scheduled: number;
     };
     upcoming_sessions: Session[];
+}
+
+// Auth types
+export interface Trainer {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    created_at: string;
+}
+
+export interface AuthResponse {
+    token: string;
+    trainer: Trainer;
+}
+
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface RegisterRequest {
+    email: string;
+    password: string;
+    first_name: string;
+    last_name: string;
 }

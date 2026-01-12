@@ -21,10 +21,25 @@ func NewClientHandler(db *gorm.DB) *ClientHandler {
 	return &ClientHandler{db: db}
 }
 
-// GetAll returns all clients with their session statistics
+// getTrainerID extracts trainer ID from context (set by auth middleware)
+func getTrainerID(c *gin.Context) (uuid.UUID, bool) {
+	trainerID, exists := c.Get("trainer_id")
+	if !exists {
+		return uuid.Nil, false
+	}
+	return trainerID.(uuid.UUID), true
+}
+
+// GetAll returns all clients for the authenticated trainer
 func (h *ClientHandler) GetAll(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	var clients []models.Client
-	if err := h.db.Find(&clients).Error; err != nil {
+	if err := h.db.Where("trainer_id = ?", trainerID).Find(&clients).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch clients"})
 		return
 	}
@@ -49,8 +64,14 @@ func (h *ClientHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, responses)
 }
 
-// Create creates a new client
+// Create creates a new client for the authenticated trainer
 func (h *ClientHandler) Create(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	var req models.CreateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -58,6 +79,7 @@ func (h *ClientHandler) Create(c *gin.Context) {
 	}
 
 	client := models.Client{
+		TrainerID:        trainerID,
 		FirstName:        req.FirstName,
 		LastName:         req.LastName,
 		Phone:            req.Phone,
@@ -75,8 +97,14 @@ func (h *ClientHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, client)
 }
 
-// GetByID returns a client by ID with session statistics
+// GetByID returns a client by ID (only if belongs to trainer)
 func (h *ClientHandler) GetByID(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
@@ -84,7 +112,7 @@ func (h *ClientHandler) GetByID(c *gin.Context) {
 	}
 
 	var client models.Client
-	if err := h.db.First(&client, id).Error; err != nil {
+	if err := h.db.Where("id = ? AND trainer_id = ?", id, trainerID).First(&client).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 			return
@@ -110,8 +138,14 @@ func (h *ClientHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// Update updates a client
+// Update updates a client (only if belongs to trainer)
 func (h *ClientHandler) Update(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
@@ -119,7 +153,7 @@ func (h *ClientHandler) Update(c *gin.Context) {
 	}
 
 	var client models.Client
-	if err := h.db.First(&client, id).Error; err != nil {
+	if err := h.db.Where("id = ? AND trainer_id = ?", id, trainerID).First(&client).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 			return
@@ -165,15 +199,21 @@ func (h *ClientHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, client)
 }
 
-// Delete soft deletes a client
+// Delete soft deletes a client (only if belongs to trainer)
 func (h *ClientHandler) Delete(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
 		return
 	}
 
-	result := h.db.Delete(&models.Client{}, id)
+	result := h.db.Where("id = ? AND trainer_id = ?", id, trainerID).Delete(&models.Client{})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete client"})
 		return
@@ -188,9 +228,22 @@ func (h *ClientHandler) Delete(c *gin.Context) {
 
 // GetMeasurements returns all measurements for a client
 func (h *ClientHandler) GetMeasurements(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		return
+	}
+
+	// Verify client belongs to trainer
+	var client models.Client
+	if err := h.db.Where("id = ? AND trainer_id = ?", id, trainerID).First(&client).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 		return
 	}
 
@@ -205,20 +258,22 @@ func (h *ClientHandler) GetMeasurements(c *gin.Context) {
 
 // CreateMeasurement creates a new measurement for a client
 func (h *ClientHandler) CreateMeasurement(c *gin.Context) {
+	trainerID, ok := getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
 		return
 	}
 
-	// Verify client exists
+	// Verify client belongs to trainer
 	var client models.Client
-	if err := h.db.First(&client, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify client"})
+	if err := h.db.Where("id = ? AND trainer_id = ?", id, trainerID).First(&client).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 		return
 	}
 

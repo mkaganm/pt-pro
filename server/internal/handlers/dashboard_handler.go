@@ -7,6 +7,7 @@ import (
 	"ptmate/internal/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,15 @@ type DashboardHandler struct {
 // NewDashboardHandler creates a new DashboardHandler
 func NewDashboardHandler(db *gorm.DB) *DashboardHandler {
 	return &DashboardHandler{db: db}
+}
+
+// getTrainerID extracts trainer ID from context
+func (h *DashboardHandler) getTrainerID(c *gin.Context) (uuid.UUID, bool) {
+	trainerID, exists := c.Get("trainer_id")
+	if !exists {
+		return uuid.Nil, false
+	}
+	return trainerID.(uuid.UUID), true
 }
 
 // DashboardResponse represents the dashboard data
@@ -37,8 +47,14 @@ type WeeklyStats struct {
 	Scheduled int64 `json:"scheduled"`
 }
 
-// GetDashboard returns dashboard data
+// GetDashboard returns dashboard data for the authenticated trainer
 func (h *DashboardHandler) GetDashboard(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	tomorrow := today.Add(24 * time.Hour)
@@ -47,33 +63,42 @@ func (h *DashboardHandler) GetDashboard(c *gin.Context) {
 
 	var response DashboardResponse
 
-	// Get today's sessions
+	// Get today's sessions for trainer's clients
 	h.db.Preload("Client").
-		Where("scheduled_at >= ? AND scheduled_at < ?", today, tomorrow).
-		Order("scheduled_at ASC").
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("clients.trainer_id = ?", trainerID).
+		Where("sessions.scheduled_at >= ? AND sessions.scheduled_at < ?", today, tomorrow).
+		Order("sessions.scheduled_at ASC").
 		Find(&response.TodaySessions)
 
-	// Get total clients
-	h.db.Model(&models.Client{}).Count(&response.TotalClients)
+	// Get total clients for trainer
+	h.db.Model(&models.Client{}).Where("trainer_id = ?", trainerID).Count(&response.TotalClients)
 
-	// Get total sessions
-	h.db.Model(&models.Session{}).Count(&response.TotalSessions)
-
-	// Get weekly stats
+	// Get total sessions for trainer's clients
 	h.db.Model(&models.Session{}).
-		Where("scheduled_at >= ? AND scheduled_at < ?", weekStart, weekEnd).
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("clients.trainer_id = ?", trainerID).
+		Count(&response.TotalSessions)
+
+	// Get weekly stats for trainer's clients
+	h.db.Model(&models.Session{}).
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("clients.trainer_id = ?", trainerID).
+		Where("sessions.scheduled_at >= ? AND sessions.scheduled_at < ?", weekStart, weekEnd).
 		Select(`
-			COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
-			COUNT(CASE WHEN status = 'no_show' THEN 1 END) as no_show,
-			COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled,
-			COUNT(CASE WHEN status = 'scheduled' THEN 1 END) as scheduled
+			COUNT(CASE WHEN sessions.status = 'completed' THEN 1 END) as completed,
+			COUNT(CASE WHEN sessions.status = 'no_show' THEN 1 END) as no_show,
+			COUNT(CASE WHEN sessions.status = 'cancelled' THEN 1 END) as cancelled,
+			COUNT(CASE WHEN sessions.status = 'scheduled' THEN 1 END) as scheduled
 		`).
 		Scan(&response.WeeklyStats)
 
 	// Get upcoming sessions (next 5)
 	h.db.Preload("Client").
-		Where("scheduled_at > ? AND status = ?", now, models.SessionStatusScheduled).
-		Order("scheduled_at ASC").
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("clients.trainer_id = ?", trainerID).
+		Where("sessions.scheduled_at > ? AND sessions.status = ?", now, models.SessionStatusScheduled).
+		Order("sessions.scheduled_at ASC").
 		Limit(5).
 		Find(&response.UpcomingSessions)
 
@@ -87,21 +112,29 @@ type CalendarResponse struct {
 
 // GetCalendar returns sessions for calendar view
 func (h *DashboardHandler) GetCalendar(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	// Default to current month if not specified
 	from := c.Query("from")
 	to := c.Query("to")
 
-	query := h.db.Preload("Client")
+	query := h.db.Preload("Client").
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("clients.trainer_id = ?", trainerID)
 
 	if from != "" {
-		query = query.Where("scheduled_at >= ?", from)
+		query = query.Where("sessions.scheduled_at >= ?", from)
 	}
 	if to != "" {
-		query = query.Where("scheduled_at <= ?", to)
+		query = query.Where("sessions.scheduled_at <= ?", to)
 	}
 
 	var sessions []models.Session
-	if err := query.Order("scheduled_at ASC").Find(&sessions).Error; err != nil {
+	if err := query.Order("sessions.scheduled_at ASC").Find(&sessions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch sessions"})
 		return
 	}
