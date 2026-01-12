@@ -75,6 +75,8 @@
         "noSessions": "No sessions yet",
         "noResults": "No sessions found matching the filter",
         "selectClient": "Select Client",
+        "date": "Date",
+        "time": "Time",
         "dateTime": "Date and Time",
         "duration": "Duration (minutes)",
         "notes": "Notes",
