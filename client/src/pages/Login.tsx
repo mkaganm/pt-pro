@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Dumbbell, Mail, Lock, AlertCircle } from 'lucide-react';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
+import LanguageSwitcher from '../components/common/LanguageSwitcher';
 import { useAuthStore } from '../store/useAuthStore';
 
 export default function Login() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { login, isLoading, error, clearError } = useAuthStore();
     const [formData, setFormData] = useState({
@@ -27,13 +30,18 @@ export default function Login() {
     return (
         <div className="min-h-screen bg-dark flex items-center justify-center p-4">
             <div className="w-full max-w-md">
+                {/* Language Switcher */}
+                <div className="flex justify-end mb-4">
+                    <LanguageSwitcher />
+                </div>
+
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
                         <Dumbbell className="w-10 h-10 text-dark" />
                     </div>
                     <h1 className="text-3xl font-bold text-white">PT Mate</h1>
-                    <p className="text-gray-400 mt-2">Welcome back, trainer!</p>
+                    <p className="text-gray-400 mt-2">{t('auth.welcomeBack')}</p>
                 </div>
 
                 {/* Login Form */}
@@ -50,7 +58,7 @@ export default function Login() {
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <Input
                                 type="email"
-                                placeholder="Email"
+                                placeholder={t('auth.email')}
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="pl-12"
@@ -62,7 +70,7 @@ export default function Login() {
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <Input
                                 type="password"
-                                placeholder="Password"
+                                placeholder={t('auth.password')}
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 className="pl-12"
@@ -71,15 +79,15 @@ export default function Login() {
                         </div>
 
                         <Button type="submit" isLoading={isLoading} className="w-full">
-                            Sign In
+                            {t('auth.login')}
                         </Button>
                     </form>
 
                     <div className="mt-6 text-center">
                         <p className="text-gray-400">
-                            Don't have an account?{' '}
+                            {t('auth.noAccount')}{' '}
                             <Link to="/register" className="text-primary hover:text-primary-400 font-medium">
-                                Sign up
+                                {t('auth.signUp')}
                             </Link>
                         </p>
                     </div>

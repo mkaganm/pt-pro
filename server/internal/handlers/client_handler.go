@@ -44,8 +44,8 @@ func (h *ClientHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	// Build response with calculated stats
-	var responses []models.ClientResponse
+	// Build response with calculated stats - initialize as empty slice, not nil
+	responses := make([]models.ClientResponse, 0)
 	for _, client := range clients {
 		stats := h.getSessionStats(client.ID)
 		usedSessions := stats.Completed + stats.NoShow

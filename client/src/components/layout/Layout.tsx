@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
     LayoutDashboard,
     Users,
@@ -10,22 +11,24 @@ import {
     LogOut
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 
 interface LayoutProps {
     children: ReactNode;
 }
 
-const navItems = [
-    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/clients', label: 'Clients', icon: Users },
-    { path: '/sessions', label: 'Sessions', icon: Calendar },
-];
-
 export default function Layout({ children }: LayoutProps) {
+    const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const { trainer, logout } = useAuthStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const navItems = [
+        { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { path: '/clients', label: t('nav.clients'), icon: Users },
+        { path: '/sessions', label: t('nav.sessions'), icon: Calendar },
+    ];
 
     const handleLogout = () => {
         logout();
@@ -64,7 +67,7 @@ export default function Layout({ children }: LayoutProps) {
                     })}
                 </nav>
 
-                {/* User & Logout */}
+                {/* User, Language & Logout */}
                 <div className="px-4 py-4 border-t border-dark-100">
                     {trainer && (
                         <div className="flex items-center gap-3 px-4 py-2 mb-2">
@@ -81,12 +84,13 @@ export default function Layout({ children }: LayoutProps) {
                             </div>
                         </div>
                     )}
+                    <LanguageSwitcher />
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:bg-dark-200 hover:text-white transition-all duration-200"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:bg-dark-200 hover:text-white transition-all duration-200 mt-1"
                     >
                         <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Logout</span>
+                        <span className="font-medium">{t('nav.logout')}</span>
                     </button>
                 </div>
             </aside>
@@ -100,12 +104,15 @@ export default function Layout({ children }: LayoutProps) {
                         </div>
                         <span className="text-lg font-bold text-white">PT Mate</span>
                     </div>
-                    <button
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className="p-2 rounded-lg text-gray-400 hover:bg-dark-200"
-                    >
-                        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <LanguageSwitcher />
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="p-2 rounded-lg text-gray-400 hover:bg-dark-200"
+                        >
+                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Menu */}
@@ -133,7 +140,7 @@ export default function Layout({ children }: LayoutProps) {
                             className="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:bg-dark-200 hover:text-white transition-all duration-200"
                         >
                             <LogOut className="w-5 h-5" />
-                            <span className="font-medium">Logout</span>
+                            <span className="font-medium">{t('nav.logout')}</span>
                         </button>
                     </nav>
                 )}
