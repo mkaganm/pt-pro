@@ -25,6 +25,7 @@ func main() {
 
 	// Auto migrate database schemas
 	if err := db.AutoMigrate(
+		&models.Trainer{},
 		&models.Client{},
 		&models.Session{},
 		&models.Measurement{},
@@ -52,43 +53,59 @@ func main() {
 	// Setup API routes
 	api := router.Group("/api/v1")
 	{
-		// Client routes
-		clientHandler := handlers.NewClientHandler(db)
-		clients := api.Group("/clients")
+		// Auth routes (public)
+		authHandler := handlers.NewAuthHandler(db)
+		auth := api.Group("/auth")
 		{
-			clients.GET("", clientHandler.GetAll)
-			clients.POST("", clientHandler.Create)
-			clients.GET("/:id", clientHandler.GetByID)
-			clients.PUT("/:id", clientHandler.Update)
-			clients.DELETE("/:id", clientHandler.Delete)
-			clients.GET("/:id/measurements", clientHandler.GetMeasurements)
-			clients.POST("/:id/measurements", clientHandler.CreateMeasurement)
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
 		}
 
-		// Session routes
-		sessionHandler := handlers.NewSessionHandler(db)
-		sessions := api.Group("/sessions")
+		// Protected routes (require authentication)
+		protected := api.Group("")
+		protected.Use(middleware.Auth())
 		{
-			sessions.GET("", sessionHandler.GetAll)
-			sessions.POST("", sessionHandler.Create)
-			sessions.GET("/:id", sessionHandler.GetByID)
-			sessions.PUT("/:id", sessionHandler.Update)
-			sessions.PATCH("/:id/status", sessionHandler.UpdateStatus)
-			sessions.DELETE("/:id", sessionHandler.Delete)
-		}
+			// Get current user
+			protected.GET("/auth/me", authHandler.GetMe)
 
-		// Measurement routes
-		measurementHandler := handlers.NewMeasurementHandler(db)
-		measurements := api.Group("/measurements")
-		{
-			measurements.GET("/:id", measurementHandler.GetByID)
-			measurements.DELETE("/:id", measurementHandler.Delete)
-		}
+			// Client routes
+			clientHandler := handlers.NewClientHandler(db)
+			clients := protected.Group("/clients")
+			{
+				clients.GET("", clientHandler.GetAll)
+				clients.POST("", clientHandler.Create)
+				clients.GET("/:id", clientHandler.GetByID)
+				clients.PUT("/:id", clientHandler.Update)
+				clients.DELETE("/:id", clientHandler.Delete)
+				clients.GET("/:id/measurements", clientHandler.GetMeasurements)
+				clients.POST("/:id/measurements", clientHandler.CreateMeasurement)
+			}
 
-		// Dashboard routes
-		dashboardHandler := handlers.NewDashboardHandler(db)
-		api.GET("/dashboard", dashboardHandler.GetDashboard)
-		api.GET("/calendar", dashboardHandler.GetCalendar)
+			// Session routes
+			sessionHandler := handlers.NewSessionHandler(db)
+			sessions := protected.Group("/sessions")
+			{
+				sessions.GET("", sessionHandler.GetAll)
+				sessions.POST("", sessionHandler.Create)
+				sessions.GET("/:id", sessionHandler.GetByID)
+				sessions.PUT("/:id", sessionHandler.Update)
+				sessions.PATCH("/:id/status", sessionHandler.UpdateStatus)
+				sessions.DELETE("/:id", sessionHandler.Delete)
+			}
+
+			// Measurement routes
+			measurementHandler := handlers.NewMeasurementHandler(db)
+			measurements := protected.Group("/measurements")
+			{
+				measurements.GET("/:id", measurementHandler.GetByID)
+				measurements.DELETE("/:id", measurementHandler.Delete)
+			}
+
+			// Dashboard routes
+			dashboardHandler := handlers.NewDashboardHandler(db)
+			protected.GET("/dashboard", dashboardHandler.GetDashboard)
+			protected.GET("/calendar", dashboardHandler.GetCalendar)
+		}
 	}
 
 	// Get port from environment or default

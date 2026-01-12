@@ -20,10 +20,27 @@ func NewSessionHandler(db *gorm.DB) *SessionHandler {
 	return &SessionHandler{db: db}
 }
 
-// GetAll returns all sessions with optional filters
+// getTrainerID extracts trainer ID from context
+func (h *SessionHandler) getTrainerID(c *gin.Context) (uuid.UUID, bool) {
+	trainerID, exists := c.Get("trainer_id")
+	if !exists {
+		return uuid.Nil, false
+	}
+	return trainerID.(uuid.UUID), true
+}
+
+// GetAll returns all sessions for trainer's clients
 func (h *SessionHandler) GetAll(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	var sessions []models.Session
-	query := h.db.Preload("Client")
+	query := h.db.Preload("Client").
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("clients.trainer_id = ?", trainerID)
 
 	// Filter by client_id if provided
 	if clientID := c.Query("client_id"); clientID != "" {
@@ -32,7 +49,7 @@ func (h *SessionHandler) GetAll(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
 			return
 		}
-		query = query.Where("client_id = ?", id)
+		query = query.Where("sessions.client_id = ?", id)
 	}
 
 	// Filter by status if provided
@@ -41,18 +58,18 @@ func (h *SessionHandler) GetAll(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
 			return
 		}
-		query = query.Where("status = ?", status)
+		query = query.Where("sessions.status = ?", status)
 	}
 
 	// Filter by date range if provided
 	if from := c.Query("from"); from != "" {
-		query = query.Where("scheduled_at >= ?", from)
+		query = query.Where("sessions.scheduled_at >= ?", from)
 	}
 	if to := c.Query("to"); to != "" {
-		query = query.Where("scheduled_at <= ?", to)
+		query = query.Where("sessions.scheduled_at <= ?", to)
 	}
 
-	if err := query.Order("scheduled_at ASC").Find(&sessions).Error; err != nil {
+	if err := query.Order("sessions.scheduled_at ASC").Find(&sessions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch sessions"})
 		return
 	}
@@ -62,20 +79,22 @@ func (h *SessionHandler) GetAll(c *gin.Context) {
 
 // Create creates a new session
 func (h *SessionHandler) Create(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	var req models.CreateSessionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Verify client exists
+	// Verify client exists and belongs to trainer
 	var client models.Client
-	if err := h.db.First(&client, req.ClientID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify client"})
+	if err := h.db.Where("id = ? AND trainer_id = ?", req.ClientID, trainerID).First(&client).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Client not found"})
 		return
 	}
 
@@ -105,6 +124,12 @@ func (h *SessionHandler) Create(c *gin.Context) {
 
 // GetByID returns a session by ID
 func (h *SessionHandler) GetByID(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
@@ -112,12 +137,11 @@ func (h *SessionHandler) GetByID(c *gin.Context) {
 	}
 
 	var session models.Session
-	if err := h.db.Preload("Client").First(&session, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch session"})
+	if err := h.db.Preload("Client").
+		Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("sessions.id = ? AND clients.trainer_id = ?", id, trainerID).
+		First(&session).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
 
@@ -126,6 +150,12 @@ func (h *SessionHandler) GetByID(c *gin.Context) {
 
 // Update updates a session
 func (h *SessionHandler) Update(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
@@ -133,12 +163,10 @@ func (h *SessionHandler) Update(c *gin.Context) {
 	}
 
 	var session models.Session
-	if err := h.db.First(&session, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch session"})
+	if err := h.db.Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("sessions.id = ? AND clients.trainer_id = ?", id, trainerID).
+		First(&session).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
 
@@ -176,6 +204,12 @@ func (h *SessionHandler) Update(c *gin.Context) {
 
 // UpdateStatus updates only the status of a session
 func (h *SessionHandler) UpdateStatus(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
@@ -183,12 +217,10 @@ func (h *SessionHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	var session models.Session
-	if err := h.db.First(&session, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch session"})
+	if err := h.db.Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("sessions.id = ? AND clients.trainer_id = ?", id, trainerID).
+		First(&session).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
 
@@ -199,7 +231,7 @@ func (h *SessionHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	if !models.IsValidStatus(req.Status) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status. Valid values: scheduled, completed, no_show, cancelled"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
 		return
 	}
 
@@ -215,19 +247,29 @@ func (h *SessionHandler) UpdateStatus(c *gin.Context) {
 
 // Delete soft deletes a session
 func (h *SessionHandler) Delete(c *gin.Context) {
+	trainerID, ok := h.getTrainerID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
+		return
+	}
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
 		return
 	}
 
-	result := h.db.Delete(&models.Session{}, id)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session"})
+	// Verify session belongs to trainer's client
+	var session models.Session
+	if err := h.db.Joins("JOIN clients ON clients.id = sessions.client_id").
+		Where("sessions.id = ? AND clients.trainer_id = ?", id, trainerID).
+		First(&session).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+
+	if err := h.db.Delete(&session).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session"})
 		return
 	}
 
