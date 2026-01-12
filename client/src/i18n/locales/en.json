@@ -80,6 +80,8 @@
         "notes": "Notes",
         "status": "Status",
         "updateStatus": "Update Status",
+        "selectTime": "Select Time",
+        "selectDate": "Select Date",
         "scheduled": "Scheduled",
         "completed": "Completed",
         "noShow": "No-Show",
@@ -87,11 +89,15 @@
     },
     "measurements": {
         "weight": "Weight (kg)",
-        "height": "Height (cm)",
-        "bodyFat": "Body Fat (%)",
+        "neck": "Neck (cm)",
+        "shoulder": "Shoulder (cm)",
+        "chest": "Chest (cm)",
         "waist": "Waist (cm)",
         "hip": "Hip (cm)",
-        "flexibility": "Flexibility (cm)",
+        "rightArm": "Right Arm (cm)",
+        "leftArm": "Left Arm (cm)",
+        "rightLeg": "Right Leg (cm)",
+        "leftLeg": "Left Leg (cm)",
         "measuredAt": "Measured At"
     }
 }

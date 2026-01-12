@@ -87,11 +87,15 @@
     },
     "measurements": {
         "weight": "Kilo (kg)",
-        "height": "Boy (cm)",
-        "bodyFat": "Yağ Oranı (%)",
+        "neck": "Boyun (cm)",
+        "shoulder": "Omuz (cm)",
+        "chest": "Göğüs (cm)",
         "waist": "Bel (cm)",
         "hip": "Kalça (cm)",
-        "flexibility": "Esneklik (cm)",
+        "rightArm": "Sağ Kol (cm)",
+        "leftArm": "Sol Kol (cm)",
+        "rightLeg": "Sağ Bacak (cm)",
+        "leftLeg": "Sol Bacak (cm)",
         "measuredAt": "Ölçüm Tarihi"
     }
 }
