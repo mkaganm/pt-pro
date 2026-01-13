@@ -32,7 +32,8 @@ export default function ClientDetail() {
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
     const [sessionForm, setSessionForm] = useState({
-        scheduled_at: '',
+        date: '',
+        time: '',
         duration_minutes: 60,
         notes: '',
     });
@@ -77,15 +78,18 @@ export default function ClientDetail() {
 
     const handleAddSession = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!sessionForm.date || !sessionForm.time) return;
+
         try {
+            const scheduledAt = new Date(`${sessionForm.date}T${sessionForm.time}:00`).toISOString();
             await sessionsApi.create({
                 client_id: id!,
-                scheduled_at: new Date(sessionForm.scheduled_at).toISOString(),
+                scheduled_at: scheduledAt,
                 duration_minutes: sessionForm.duration_minutes,
                 notes: sessionForm.notes,
             });
             setIsSessionModalOpen(false);
-            setSessionForm({ scheduled_at: '', duration_minutes: 60, notes: '' });
+            setSessionForm({ date: '', time: '', duration_minutes: 60, notes: '' });
             loadSessions();
             fetchClient(id!);
         } catch (error) {
@@ -363,13 +367,22 @@ export default function ClientDetail() {
                 title={t('clients.addSession')}
             >
                 <form onSubmit={handleAddSession} className="space-y-4">
-                    <Input
-                        label={t('sessions.dateTime')}
-                        type="datetime-local"
-                        value={sessionForm.scheduled_at}
-                        onChange={(e) => setSessionForm({ ...sessionForm, scheduled_at: e.target.value })}
-                        required
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('sessions.date')}
+                            type="date"
+                            value={sessionForm.date}
+                            onChange={(e) => setSessionForm({ ...sessionForm, date: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label={t('sessions.time')}
+                            type="time"
+                            value={sessionForm.time}
+                            onChange={(e) => setSessionForm({ ...sessionForm, time: e.target.value })}
+                            required
+                        />
+                    </div>
                     <Input
                         label={t('sessions.duration')}
                         type="number"

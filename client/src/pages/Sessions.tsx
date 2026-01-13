@@ -10,15 +10,6 @@ import { useSessionStore } from '../store/useSessionStore';
 import { useClientStore } from '../store/useClientStore';
 import type { SessionStatus } from '../types';
 
-// Common time slots for personal training sessions
-const TIME_SLOTS = [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
-    '20:00', '20:30', '21:00'
-];
-
 export default function Sessions() {
     const { t } = useTranslation();
     const { sessions, isLoading, fetchSessions, createSession, updateSessionStatus } = useSessionStore();
@@ -96,13 +87,20 @@ export default function Sessions() {
 
     const getStatusLabel = (status: SessionStatus | 'all') => {
         if (status === 'all') return t('sessions.allStatuses');
-        return t(`sessions.${status}`);
+        // Map status to translation key (no_show -> noShow)
+        const keyMap: Record<string, string> = {
+            scheduled: 'scheduled',
+            completed: 'completed',
+            no_show: 'noShow',
+            cancelled: 'cancelled',
+        };
+        return t(`sessions.${keyMap[status] || status}`);
     };
 
     // Set default date to today when modal opens
     const handleOpenModal = () => {
         const today = new Date().toISOString().split('T')[0];
-        setFormData({ ...formData, date: today });
+        setFormData({ ...formData, date: today, time: '10:00' });
         setIsAddModalOpen(true);
     };
 
@@ -186,7 +184,7 @@ export default function Sessions() {
                         </select>
                     </div>
 
-                    {/* Separate Date and Time */}
+                    {/* Separate Date and Time - with type="time" for manual entry */}
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label={t('sessions.date')}
@@ -195,24 +193,13 @@ export default function Sessions() {
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                             required
                         />
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                {t('sessions.time')}
-                            </label>
-                            <select
-                                value={formData.time}
-                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-white focus:outline-none focus:border-primary"
-                                required
-                            >
-                                <option value="">{t('sessions.selectTime')}</option>
-                                {TIME_SLOTS.map((time) => (
-                                    <option key={time} value={time}>
-                                        {time}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <Input
+                            label={t('sessions.time')}
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                            required
+                        />
                     </div>
 
                     <Input
