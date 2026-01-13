@@ -58,11 +58,15 @@ export interface Measurement {
     id: string;
     client_id: string;
     weight_kg?: number;
-    height_cm?: number;
-    body_fat_percent?: number;
+    neck_cm?: number;
+    shoulder_cm?: number;
+    chest_cm?: number;
     waist_cm?: number;
     hip_cm?: number;
-    flexibility_cm?: number;
+    right_arm_cm?: number;
+    left_arm_cm?: number;
+    right_leg_cm?: number;
+    left_leg_cm?: number;
     notes?: string;
     measured_at: string;
     created_at: string;
@@ -70,11 +74,15 @@ export interface Measurement {
 
 export interface CreateMeasurementRequest {
     weight_kg?: number;
-    height_cm?: number;
-    body_fat_percent?: number;
+    neck_cm?: number;
+    shoulder_cm?: number;
+    chest_cm?: number;
     waist_cm?: number;
     hip_cm?: number;
-    flexibility_cm?: number;
+    right_arm_cm?: number;
+    left_arm_cm?: number;
+    right_leg_cm?: number;
+    left_leg_cm?: number;
     notes?: string;
     measured_at?: string;
 }

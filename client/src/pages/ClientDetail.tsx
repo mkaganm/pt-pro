@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
     ArrowLeft,
     Phone,
@@ -20,6 +21,7 @@ import { sessionsApi, clientsApi } from '../api/endpoints';
 import type { Session, Measurement, CreateMeasurementRequest } from '../types';
 
 export default function ClientDetail() {
+    const { t } = useTranslation();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { selectedClient, fetchClient, deleteClient, isLoading } = useClientStore();
@@ -30,16 +32,22 @@ export default function ClientDetail() {
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
     const [sessionForm, setSessionForm] = useState({
-        scheduled_at: '',
+        date: '',
+        time: '',
         duration_minutes: 60,
         notes: '',
     });
     const [measurementForm, setMeasurementForm] = useState<CreateMeasurementRequest>({
         weight_kg: undefined,
-        height_cm: undefined,
-        body_fat_percent: undefined,
+        neck_cm: undefined,
+        shoulder_cm: undefined,
+        chest_cm: undefined,
         waist_cm: undefined,
         hip_cm: undefined,
+        right_arm_cm: undefined,
+        left_arm_cm: undefined,
+        right_leg_cm: undefined,
+        left_leg_cm: undefined,
     });
 
     useEffect(() => {
@@ -70,15 +78,18 @@ export default function ClientDetail() {
 
     const handleAddSession = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!sessionForm.date || !sessionForm.time) return;
+
         try {
+            const scheduledAt = new Date(`${sessionForm.date}T${sessionForm.time}:00`).toISOString();
             await sessionsApi.create({
                 client_id: id!,
-                scheduled_at: new Date(sessionForm.scheduled_at).toISOString(),
+                scheduled_at: scheduledAt,
                 duration_minutes: sessionForm.duration_minutes,
                 notes: sessionForm.notes,
             });
             setIsSessionModalOpen(false);
-            setSessionForm({ scheduled_at: '', duration_minutes: 60, notes: '' });
+            setSessionForm({ date: '', time: '', duration_minutes: 60, notes: '' });
             loadSessions();
             fetchClient(id!);
         } catch (error) {
@@ -102,7 +113,7 @@ export default function ClientDetail() {
     };
 
     const handleDelete = async () => {
-        if (window.confirm('Are you sure you want to delete this client?')) {
+        if (window.confirm(t('common.confirm') + '?')) {
             try {
                 await deleteClient(id!);
                 navigate('/clients');
@@ -168,10 +179,10 @@ export default function ClientDetail() {
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                                 <Package className="w-4 h-4 text-primary" />
-                                <span className="text-sm text-gray-400">Package Progress</span>
+                                <span className="text-sm text-gray-400">{t('clients.packageSize')}</span>
                             </div>
                             <span className="text-sm font-medium text-white">
-                                {selectedClient.remaining_sessions} / {selectedClient.total_package_size} remaining
+                                {selectedClient.remaining_sessions} / {selectedClient.total_package_size}
                             </span>
                         </div>
                         <div className="w-full h-3 bg-dark-100 rounded-full overflow-hidden">
@@ -186,19 +197,19 @@ export default function ClientDetail() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-dark-100">
                         <div className="text-center">
                             <p className="text-2xl font-bold text-green-400">{selectedClient.completed_sessions}</p>
-                            <p className="text-xs text-gray-500">Completed</p>
+                            <p className="text-xs text-gray-500">{t('clients.completedSessions')}</p>
                         </div>
                         <div className="text-center">
                             <p className="text-2xl font-bold text-red-400">{selectedClient.no_show_sessions}</p>
-                            <p className="text-xs text-gray-500">No-Shows</p>
+                            <p className="text-xs text-gray-500">{t('clients.noShowSessions')}</p>
                         </div>
                         <div className="text-center">
                             <p className="text-2xl font-bold text-gray-400">{selectedClient.cancelled_sessions}</p>
-                            <p className="text-xs text-gray-500">Cancelled</p>
+                            <p className="text-xs text-gray-500">{t('clients.cancelledSessions')}</p>
                         </div>
                         <div className="text-center">
                             <p className="text-2xl font-bold text-blue-400">{selectedClient.scheduled_sessions}</p>
-                            <p className="text-xs text-gray-500">Scheduled</p>
+                            <p className="text-xs text-gray-500">{t('clients.scheduledSessions')}</p>
                         </div>
                     </div>
                 </div>
@@ -209,25 +220,25 @@ export default function ClientDetail() {
                 <button
                     onClick={() => setActiveTab('sessions')}
                     className={`px-4 py-3 font-medium transition-colors ${activeTab === 'sessions'
-                            ? 'text-primary border-b-2 border-primary'
-                            : 'text-gray-400 hover:text-white'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                 >
                     <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        Sessions
+                        {t('clients.sessions')}
                     </div>
                 </button>
                 <button
                     onClick={() => setActiveTab('measurements')}
                     className={`px-4 py-3 font-medium transition-colors ${activeTab === 'measurements'
-                            ? 'text-primary border-b-2 border-primary'
-                            : 'text-gray-400 hover:text-white'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                 >
                     <div className="flex items-center gap-2">
                         <Scale className="w-4 h-4" />
-                        Measurements
+                        {t('clients.measurements')}
                     </div>
                 </button>
             </div>
@@ -239,12 +250,12 @@ export default function ClientDetail() {
                         icon={<Plus className="w-5 h-5" />}
                         onClick={() => setIsSessionModalOpen(true)}
                     >
-                        Add Session
+                        {t('clients.addSession')}
                     </Button>
 
                     {sessions.length === 0 ? (
                         <Card className="text-center py-8">
-                            <p className="text-gray-400">No sessions yet</p>
+                            <p className="text-gray-400">{t('sessions.noSessions')}</p>
                         </Card>
                     ) : (
                         <div className="space-y-3">
@@ -262,47 +273,85 @@ export default function ClientDetail() {
                         icon={<Plus className="w-5 h-5" />}
                         onClick={() => setIsMeasurementModalOpen(true)}
                     >
-                        Add Measurement
+                        {t('clients.addMeasurement')}
                     </Button>
 
                     {measurements.length === 0 ? (
                         <Card className="text-center py-8">
-                            <p className="text-gray-400">No measurements yet</p>
+                            <p className="text-gray-400">{t('common.noData')}</p>
                         </Card>
                     ) : (
                         <div className="space-y-3">
                             {measurements.map((measurement) => (
                                 <Card key={measurement.id}>
-                                    <div className="flex justify-between items-start">
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center border-b border-dark-100 pb-2">
+                                            <p className="text-sm font-medium text-primary">
+                                                {new Date(measurement.measured_at).toLocaleDateString('tr-TR')}
+                                            </p>
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                                             {measurement.weight_kg && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Weight</p>
-                                                    <p className="text-lg font-semibold text-white">{measurement.weight_kg} kg</p>
+                                                    <p className="text-xs text-gray-500">{t('measurements.weight')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.weight_kg}</p>
                                                 </div>
                                             )}
-                                            {measurement.body_fat_percent && (
+                                            {measurement.neck_cm && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Body Fat</p>
-                                                    <p className="text-lg font-semibold text-white">{measurement.body_fat_percent}%</p>
+                                                    <p className="text-xs text-gray-500">{t('measurements.neck')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.neck_cm}</p>
+                                                </div>
+                                            )}
+                                            {measurement.shoulder_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('measurements.shoulder')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.shoulder_cm}</p>
+                                                </div>
+                                            )}
+                                            {measurement.chest_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('measurements.chest')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.chest_cm}</p>
                                                 </div>
                                             )}
                                             {measurement.waist_cm && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Waist</p>
-                                                    <p className="text-lg font-semibold text-white">{measurement.waist_cm} cm</p>
+                                                    <p className="text-xs text-gray-500">{t('measurements.waist')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.waist_cm}</p>
                                                 </div>
                                             )}
                                             {measurement.hip_cm && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Hip</p>
-                                                    <p className="text-lg font-semibold text-white">{measurement.hip_cm} cm</p>
+                                                    <p className="text-xs text-gray-500">{t('measurements.hip')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.hip_cm}</p>
+                                                </div>
+                                            )}
+                                            {measurement.right_arm_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('measurements.rightArm')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.right_arm_cm}</p>
+                                                </div>
+                                            )}
+                                            {measurement.left_arm_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('measurements.leftArm')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.left_arm_cm}</p>
+                                                </div>
+                                            )}
+                                            {measurement.right_leg_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('measurements.rightLeg')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.right_leg_cm}</p>
+                                                </div>
+                                            )}
+                                            {measurement.left_leg_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('measurements.leftLeg')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.left_leg_cm}</p>
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-500">
-                                            {new Date(measurement.measured_at).toLocaleDateString('tr-TR')}
-                                        </p>
                                     </div>
                                 </Card>
                             ))}
@@ -315,18 +364,27 @@ export default function ClientDetail() {
             <Modal
                 isOpen={isSessionModalOpen}
                 onClose={() => setIsSessionModalOpen(false)}
-                title="Add Session"
+                title={t('clients.addSession')}
             >
                 <form onSubmit={handleAddSession} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('sessions.date')}
+                            type="date"
+                            value={sessionForm.date}
+                            onChange={(e) => setSessionForm({ ...sessionForm, date: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label={t('sessions.time')}
+                            type="time"
+                            value={sessionForm.time}
+                            onChange={(e) => setSessionForm({ ...sessionForm, time: e.target.value })}
+                            required
+                        />
+                    </div>
                     <Input
-                        label="Date & Time"
-                        type="datetime-local"
-                        value={sessionForm.scheduled_at}
-                        onChange={(e) => setSessionForm({ ...sessionForm, scheduled_at: e.target.value })}
-                        required
-                    />
-                    <Input
-                        label="Duration (minutes)"
+                        label={t('sessions.duration')}
                         type="number"
                         min="15"
                         step="15"
@@ -335,10 +393,10 @@ export default function ClientDetail() {
                     />
                     <div className="flex gap-3 pt-4">
                         <Button type="button" variant="secondary" onClick={() => setIsSessionModalOpen(false)} className="flex-1">
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" className="flex-1">
-                            Add Session
+                            {t('common.add')}
                         </Button>
                     </div>
                 </form>
@@ -348,47 +406,96 @@ export default function ClientDetail() {
             <Modal
                 isOpen={isMeasurementModalOpen}
                 onClose={() => setIsMeasurementModalOpen(false)}
-                title="Add Measurement"
+                title={t('clients.addMeasurement')}
+                size="lg"
             >
                 <form onSubmit={handleAddMeasurement} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <Input
-                            label="Weight (kg)"
+                            label={t('measurements.weight')}
                             type="number"
-                            step="0.1"
+                            step="0.01"
                             value={measurementForm.weight_kg || ''}
                             onChange={(e) => setMeasurementForm({ ...measurementForm, weight_kg: parseFloat(e.target.value) || undefined })}
                         />
                         <Input
-                            label="Body Fat (%)"
+                            label={t('measurements.neck')}
                             type="number"
                             step="0.1"
-                            value={measurementForm.body_fat_percent || ''}
-                            onChange={(e) => setMeasurementForm({ ...measurementForm, body_fat_percent: parseFloat(e.target.value) || undefined })}
+                            value={measurementForm.neck_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, neck_cm: parseFloat(e.target.value) || undefined })}
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <Input
-                            label="Waist (cm)"
+                            label={t('measurements.shoulder')}
+                            type="number"
+                            step="0.1"
+                            value={measurementForm.shoulder_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, shoulder_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                        <Input
+                            label={t('measurements.chest')}
+                            type="number"
+                            step="0.1"
+                            value={measurementForm.chest_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, chest_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('measurements.waist')}
                             type="number"
                             step="0.1"
                             value={measurementForm.waist_cm || ''}
                             onChange={(e) => setMeasurementForm({ ...measurementForm, waist_cm: parseFloat(e.target.value) || undefined })}
                         />
                         <Input
-                            label="Hip (cm)"
+                            label={t('measurements.hip')}
                             type="number"
                             step="0.1"
                             value={measurementForm.hip_cm || ''}
                             onChange={(e) => setMeasurementForm({ ...measurementForm, hip_cm: parseFloat(e.target.value) || undefined })}
                         />
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('measurements.rightArm')}
+                            type="number"
+                            step="0.1"
+                            value={measurementForm.right_arm_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, right_arm_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                        <Input
+                            label={t('measurements.leftArm')}
+                            type="number"
+                            step="0.1"
+                            value={measurementForm.left_arm_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, left_arm_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('measurements.rightLeg')}
+                            type="number"
+                            step="0.1"
+                            value={measurementForm.right_leg_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, right_leg_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                        <Input
+                            label={t('measurements.leftLeg')}
+                            type="number"
+                            step="0.1"
+                            value={measurementForm.left_leg_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, left_leg_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                    </div>
                     <div className="flex gap-3 pt-4">
                         <Button type="button" variant="secondary" onClick={() => setIsMeasurementModalOpen(false)} className="flex-1">
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" className="flex-1">
-                            Add Measurement
+                            {t('common.add')}
                         </Button>
                     </div>
                 </form>

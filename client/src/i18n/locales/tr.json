@@ -75,6 +75,9 @@
         "noSessions": "Henüz seans yok",
         "noResults": "Seçilen filtreyle eşleşen seans bulunamadı",
         "selectClient": "Müşteri Seç",
+        "date": "Tarih",
+        "time": "Saat",
+        "selectTime": "Saat Seç",
         "dateTime": "Tarih ve Saat",
         "duration": "Süre (dakika)",
         "notes": "Notlar",
@@ -87,11 +90,15 @@
     },
     "measurements": {
         "weight": "Kilo (kg)",
-        "height": "Boy (cm)",
-        "bodyFat": "Yağ Oranı (%)",
+        "neck": "Boyun (cm)",
+        "shoulder": "Omuz (cm)",
+        "chest": "Göğüs (cm)",
         "waist": "Bel (cm)",
         "hip": "Kalça (cm)",
-        "flexibility": "Esneklik (cm)",
+        "rightArm": "Sağ Kol (cm)",
+        "leftArm": "Sol Kol (cm)",
+        "rightLeg": "Sağ Bacak (cm)",
+        "leftLeg": "Sol Bacak (cm)",
         "measuredAt": "Ölçüm Tarihi"
     }
 }

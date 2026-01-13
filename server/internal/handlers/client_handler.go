@@ -284,15 +284,19 @@ func (h *ClientHandler) CreateMeasurement(c *gin.Context) {
 	}
 
 	measurement := models.Measurement{
-		ClientID:       id,
-		WeightKg:       req.WeightKg,
-		HeightCm:       req.HeightCm,
-		BodyFatPercent: req.BodyFatPercent,
-		WaistCm:        req.WaistCm,
-		HipCm:          req.HipCm,
-		FlexibilityCm:  req.FlexibilityCm,
-		Notes:          req.Notes,
-		MeasuredAt:     req.MeasuredAt,
+		ClientID:   id,
+		WeightKg:   req.WeightKg,
+		NeckCm:     req.NeckCm,
+		ShoulderCm: req.ShoulderCm,
+		ChestCm:    req.ChestCm,
+		WaistCm:    req.WaistCm,
+		HipCm:      req.HipCm,
+		RightArmCm: req.RightArmCm,
+		LeftArmCm:  req.LeftArmCm,
+		RightLegCm: req.RightLegCm,
+		LeftLegCm:  req.LeftLegCm,
+		Notes:      req.Notes,
+		MeasuredAt: req.MeasuredAt,
 	}
 
 	// Default to current time if not provided

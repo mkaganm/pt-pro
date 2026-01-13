@@ -8,7 +8,7 @@ import SessionCard from '../components/sessions/SessionCard';
 import StatusBadge from '../components/common/StatusBadge';
 import { useSessionStore } from '../store/useSessionStore';
 import { useClientStore } from '../store/useClientStore';
-import type { CreateSessionRequest, SessionStatus } from '../types';
+import type { SessionStatus } from '../types';
 
 export default function Sessions() {
     const { t } = useTranslation();
@@ -18,9 +18,12 @@ export default function Sessions() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-    const [formData, setFormData] = useState<CreateSessionRequest>({
+
+    // Separate date and time states
+    const [formData, setFormData] = useState({
         client_id: '',
-        scheduled_at: '',
+        date: '',
+        time: '',
         duration_minutes: 60,
         notes: '',
     });
@@ -38,12 +41,26 @@ export default function Sessions() {
 
     const handleAddSession = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!formData.date || !formData.time) {
+            return;
+        }
+
         try {
-            await createSession(formData);
+            // Combine date and time into ISO string
+            const scheduledAt = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+
+            await createSession({
+                client_id: formData.client_id,
+                scheduled_at: scheduledAt,
+                duration_minutes: formData.duration_minutes,
+                notes: formData.notes,
+            });
             setIsAddModalOpen(false);
             setFormData({
                 client_id: '',
-                scheduled_at: '',
+                date: '',
+                time: '',
                 duration_minutes: 60,
                 notes: '',
             });
@@ -70,7 +87,21 @@ export default function Sessions() {
 
     const getStatusLabel = (status: SessionStatus | 'all') => {
         if (status === 'all') return t('sessions.allStatuses');
-        return t(`sessions.${status}`);
+        // Map status to translation key (no_show -> noShow)
+        const keyMap: Record<string, string> = {
+            scheduled: 'scheduled',
+            completed: 'completed',
+            no_show: 'noShow',
+            cancelled: 'cancelled',
+        };
+        return t(`sessions.${keyMap[status] || status}`);
+    };
+
+    // Set default date to today when modal opens
+    const handleOpenModal = () => {
+        const today = new Date().toISOString().split('T')[0];
+        setFormData({ ...formData, date: today, time: '10:00' });
+        setIsAddModalOpen(true);
     };
 
     return (
@@ -83,7 +114,7 @@ export default function Sessions() {
                         {filteredSessions.length} {statusFilter === 'all' ? t('sessions.title').toLowerCase() : getStatusLabel(statusFilter).toLowerCase()}
                     </p>
                 </div>
-                <Button icon={<Plus className="w-5 h-5" />} onClick={() => setIsAddModalOpen(true)}>
+                <Button icon={<Plus className="w-5 h-5" />} onClick={handleOpenModal}>
                     {t('sessions.addSession')}
                 </Button>
             </div>
@@ -95,8 +126,8 @@ export default function Sessions() {
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${statusFilter === status
-                                ? 'bg-primary text-dark'
-                                : 'bg-dark-300 text-gray-400 hover:text-white'
+                            ? 'bg-primary text-dark'
+                            : 'bg-dark-300 text-gray-400 hover:text-white'
                             }`}
                     >
                         {getStatusLabel(status)}
@@ -152,13 +183,25 @@ export default function Sessions() {
                             ))}
                         </select>
                     </div>
-                    <Input
-                        label={t('sessions.dateTime')}
-                        type="datetime-local"
-                        value={formData.scheduled_at}
-                        onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
-                        required
-                    />
+
+                    {/* Separate Date and Time - with type="time" for manual entry */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('sessions.date')}
+                            type="date"
+                            value={formData.date}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label={t('sessions.time')}
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                            required
+                        />
+                    </div>
+
                     <Input
                         label={t('sessions.duration')}
                         type="number"
