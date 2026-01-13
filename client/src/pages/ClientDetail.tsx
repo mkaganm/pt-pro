@@ -9,7 +9,8 @@ import {
     Calendar,
     Plus,
     Trash2,
-    Scale
+    Scale,
+    Edit2
 } from 'lucide-react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
@@ -17,7 +18,7 @@ import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
 import SessionCard from '../components/sessions/SessionCard';
 import { useClientStore } from '../store/useClientStore';
-import { sessionsApi, clientsApi } from '../api/endpoints';
+import { sessionsApi, clientsApi, measurementsApi } from '../api/endpoints';
 import type { Session, Measurement, CreateMeasurementRequest } from '../types';
 
 export default function ClientDetail() {
@@ -31,6 +32,7 @@ export default function ClientDetail() {
     const [activeTab, setActiveTab] = useState<'sessions' | 'measurements'>('sessions');
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
+    const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
     const [sessionForm, setSessionForm] = useState({
         date: '',
         time: '',
@@ -97,19 +99,85 @@ export default function ClientDetail() {
         }
     };
 
-    const handleAddMeasurement = async (e: React.FormEvent) => {
+    const handleAddOrUpdateMeasurement = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await clientsApi.createMeasurement(id!, {
-                ...measurementForm,
-                measured_at: new Date().toISOString(),
-            });
+            if (editingMeasurement) {
+                // Update existing measurement
+                await measurementsApi.update(editingMeasurement.id, {
+                    ...measurementForm,
+                    measured_at: editingMeasurement.measured_at,
+                });
+            } else {
+                // Create new measurement
+                await clientsApi.createMeasurement(id!, {
+                    ...measurementForm,
+                    measured_at: new Date().toISOString(),
+                });
+            }
             setIsMeasurementModalOpen(false);
-            setMeasurementForm({});
+            setEditingMeasurement(null);
+            setMeasurementForm({
+                weight_kg: undefined,
+                neck_cm: undefined,
+                shoulder_cm: undefined,
+                chest_cm: undefined,
+                waist_cm: undefined,
+                hip_cm: undefined,
+                right_arm_cm: undefined,
+                left_arm_cm: undefined,
+                right_leg_cm: undefined,
+                left_leg_cm: undefined,
+            });
             loadMeasurements();
         } catch (error) {
-            console.error('Failed to create measurement:', error);
+            console.error('Failed to save measurement:', error);
         }
+    };
+
+    const handleEditMeasurement = (measurement: Measurement) => {
+        setEditingMeasurement(measurement);
+        setMeasurementForm({
+            weight_kg: measurement.weight_kg,
+            neck_cm: measurement.neck_cm,
+            shoulder_cm: measurement.shoulder_cm,
+            chest_cm: measurement.chest_cm,
+            waist_cm: measurement.waist_cm,
+            hip_cm: measurement.hip_cm,
+            right_arm_cm: measurement.right_arm_cm,
+            left_arm_cm: measurement.left_arm_cm,
+            right_leg_cm: measurement.right_leg_cm,
+            left_leg_cm: measurement.left_leg_cm,
+        });
+        setIsMeasurementModalOpen(true);
+    };
+
+    const handleDeleteMeasurement = async (measurementId: string) => {
+        if (window.confirm(t('common.confirm') + '?')) {
+            try {
+                await measurementsApi.delete(measurementId);
+                loadMeasurements();
+            } catch (error) {
+                console.error('Failed to delete measurement:', error);
+            }
+        }
+    };
+
+    const handleOpenMeasurementModal = () => {
+        setEditingMeasurement(null);
+        setMeasurementForm({
+            weight_kg: undefined,
+            neck_cm: undefined,
+            shoulder_cm: undefined,
+            chest_cm: undefined,
+            waist_cm: undefined,
+            hip_cm: undefined,
+            right_arm_cm: undefined,
+            left_arm_cm: undefined,
+            right_leg_cm: undefined,
+            left_leg_cm: undefined,
+        });
+        setIsMeasurementModalOpen(true);
     };
 
     const handleDelete = async () => {
@@ -271,7 +339,7 @@ export default function ClientDetail() {
                 <div className="space-y-4">
                     <Button
                         icon={<Plus className="w-5 h-5" />}
-                        onClick={() => setIsMeasurementModalOpen(true)}
+                        onClick={handleOpenMeasurementModal}
                     >
                         {t('clients.addMeasurement')}
                     </Button>
@@ -289,6 +357,20 @@ export default function ClientDetail() {
                                             <p className="text-sm font-medium text-primary">
                                                 {new Date(measurement.measured_at).toLocaleDateString('tr-TR')}
                                             </p>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleEditMeasurement(measurement)}
+                                                    className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-dark-200 transition-colors"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteMeasurement(measurement.id)}
+                                                    className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-dark-200 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                                             {measurement.weight_kg && (
@@ -402,14 +484,17 @@ export default function ClientDetail() {
                 </form>
             </Modal>
 
-            {/* Add Measurement Modal */}
+            {/* Add/Edit Measurement Modal */}
             <Modal
                 isOpen={isMeasurementModalOpen}
-                onClose={() => setIsMeasurementModalOpen(false)}
-                title={t('clients.addMeasurement')}
+                onClose={() => {
+                    setIsMeasurementModalOpen(false);
+                    setEditingMeasurement(null);
+                }}
+                title={editingMeasurement ? t('common.edit') : t('clients.addMeasurement')}
                 size="lg"
             >
-                <form onSubmit={handleAddMeasurement} className="space-y-4">
+                <form onSubmit={handleAddOrUpdateMeasurement} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label={t('measurements.weight')}
@@ -491,11 +576,14 @@ export default function ClientDetail() {
                         />
                     </div>
                     <div className="flex gap-3 pt-4">
-                        <Button type="button" variant="secondary" onClick={() => setIsMeasurementModalOpen(false)} className="flex-1">
+                        <Button type="button" variant="secondary" onClick={() => {
+                            setIsMeasurementModalOpen(false);
+                            setEditingMeasurement(null);
+                        }} className="flex-1">
                             {t('common.cancel')}
                         </Button>
                         <Button type="submit" className="flex-1">
-                            {t('common.add')}
+                            {editingMeasurement ? t('common.save') : t('common.add')}
                         </Button>
                     </div>
                 </form>
