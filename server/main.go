@@ -98,6 +98,7 @@ func main() {
 			measurements := protected.Group("/measurements")
 			{
 				measurements.GET("/:id", measurementHandler.GetByID)
+				measurements.PUT("/:id", measurementHandler.Update)
 				measurements.DELETE("/:id", measurementHandler.Delete)
 			}
 

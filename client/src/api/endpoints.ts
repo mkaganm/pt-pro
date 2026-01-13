@@ -35,6 +35,7 @@ export const sessionsApi = {
 // Measurement endpoints
 export const measurementsApi = {
     getById: (id: string) => api.get<Measurement>(`/measurements/${id}`),
+    update: (id: string, data: CreateMeasurementRequest) => api.put<Measurement>(`/measurements/${id}`, data),
     delete: (id: string) => api.delete(`/measurements/${id}`),
 };
 

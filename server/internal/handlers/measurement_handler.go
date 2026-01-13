@@ -61,3 +61,51 @@ func (h *MeasurementHandler) Delete(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Measurement deleted successfully"})
 }
+
+// Update updates a measurement
+func (h *MeasurementHandler) Update(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid measurement ID"})
+		return
+	}
+
+	var measurement models.Measurement
+	if err := h.db.First(&measurement, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Measurement not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch measurement"})
+		return
+	}
+
+	var req models.CreateMeasurementRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Update fields
+	measurement.WeightKg = req.WeightKg
+	measurement.NeckCm = req.NeckCm
+	measurement.ShoulderCm = req.ShoulderCm
+	measurement.ChestCm = req.ChestCm
+	measurement.WaistCm = req.WaistCm
+	measurement.HipCm = req.HipCm
+	measurement.RightArmCm = req.RightArmCm
+	measurement.LeftArmCm = req.LeftArmCm
+	measurement.RightLegCm = req.RightLegCm
+	measurement.LeftLegCm = req.LeftLegCm
+	measurement.Notes = req.Notes
+	if !req.MeasuredAt.IsZero() {
+		measurement.MeasuredAt = req.MeasuredAt
+	}
+
+	if err := h.db.Save(&measurement).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update measurement"})
+		return
+	}
+
+	c.JSON(http.StatusOK, measurement)
+}
