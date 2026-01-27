@@ -85,6 +85,32 @@ export default function ClientDetail() {
         }
     };
 
+    const loadAssessment = async () => {
+        try {
+            const response = await clientsApi.getAssessment(id!);
+            setAssessment(response.data);
+        } catch (error) {
+            // Assessment not found is okay - it's optional
+            setAssessment(null);
+        }
+    };
+
+    const handleSaveAssessment = async (data: CreateAssessmentRequest) => {
+        setIsSavingAssessment(true);
+        try {
+            if (assessment) {
+                await clientsApi.updateAssessment(id!, data);
+            } else {
+                await clientsApi.createAssessment(id!, data);
+            }
+            loadAssessment();
+        } catch (error) {
+            console.error('Failed to save assessment:', error);
+        } finally {
+            setIsSavingAssessment(false);
+        }
+    };
+
     const handleAddSession = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!sessionForm.date || !sessionForm.time) return;
@@ -316,6 +342,18 @@ export default function ClientDetail() {
                         {t('clients.measurements')}
                     </div>
                 </button>
+                <button
+                    onClick={() => setActiveTab('assessment')}
+                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'assessment'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <ClipboardCheck className="w-4 h-4" />
+                        Değerlendirme
+                    </div>
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -446,6 +484,16 @@ export default function ClientDetail() {
                             ))}
                         </div>
                     )}
+                </div>
+            )}
+
+            {activeTab === 'assessment' && (
+                <div className="space-y-4">
+                    <AssessmentForm
+                        assessment={assessment}
+                        onSave={handleSaveAssessment}
+                        isLoading={isSavingAssessment}
+                    />
                 </div>
             )}
 

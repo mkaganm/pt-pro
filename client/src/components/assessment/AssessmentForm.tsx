@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import type { Assessment, CreateAssessmentRequest } from '../../types';
@@ -90,7 +89,6 @@ const shoulderItems = [
 ];
 
 export default function AssessmentForm({ assessment, onSave, isLoading }: AssessmentFormProps) {
-    const { t } = useTranslation();
     const [formData, setFormData] = useState<CreateAssessmentRequest>(defaultAssessment);
 
     useEffect(() => {
@@ -167,8 +165,8 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                 type="button"
                 onClick={() => handleScoreChange(itemKey, value)}
                 className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${isSelected
-                        ? colors[value] + ' text-white'
-                        : 'bg-dark-200 border-dark-100 text-gray-400 hover:border-gray-500'
+                    ? colors[value] + ' text-white'
+                    : 'bg-dark-200 border-dark-100 text-gray-400 hover:border-gray-500'
                     }`}
             >
                 {labels[value]}
@@ -176,7 +174,7 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
         );
     };
 
-    const ScoreRow = ({ items, category }: { items: { key: string; label: string }[]; category: string }) => (
+    const ScoreRow = ({ items }: { items: { key: string; label: string }[] }) => (
         <div className="space-y-3">
             {items.map(item => (
                 <div key={item.key} className="flex items-center gap-4">
@@ -217,8 +215,8 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                                         type="button"
                                         onClick={() => handleParqChange(q.key, true)}
                                         className={`px-3 py-1 rounded text-sm font-medium transition-all ${formData[q.key as keyof CreateAssessmentRequest] === true
-                                                ? 'bg-red-500/30 text-red-400 border border-red-500'
-                                                : 'bg-dark-100 text-gray-500 hover:text-gray-300'
+                                            ? 'bg-red-500/30 text-red-400 border border-red-500'
+                                            : 'bg-dark-100 text-gray-500 hover:text-gray-300'
                                             }`}
                                     >
                                         Evet
@@ -227,8 +225,8 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                                         type="button"
                                         onClick={() => handleParqChange(q.key, false)}
                                         className={`px-3 py-1 rounded text-sm font-medium transition-all ${formData[q.key as keyof CreateAssessmentRequest] === false
-                                                ? 'bg-green-500/30 text-green-400 border border-green-500'
-                                                : 'bg-dark-100 text-gray-500 hover:text-gray-300'
+                                            ? 'bg-green-500/30 text-green-400 border border-green-500'
+                                            : 'bg-dark-100 text-gray-500 hover:text-gray-300'
                                             }`}
                                     >
                                         Hayır
@@ -250,7 +248,7 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                         </span>
                     </div>
                     <p className="text-sm text-gray-400">Kötü (1) | Orta (2) | İyi (3)</p>
-                    <ScoreRow items={postureItems} category="posture" />
+                    <ScoreRow items={postureItems} />
                 </div>
             </Card>
 
@@ -262,25 +260,25 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                     {/* Push Up */}
                     <div>
                         <h4 className="text-md font-medium text-primary mb-3">Push Up / Core</h4>
-                        <ScoreRow items={pushupItems} category="pushup" />
+                        <ScoreRow items={pushupItems} />
                     </div>
 
                     {/* Squat */}
                     <div>
                         <h4 className="text-md font-medium text-primary mb-3">Squat Test</h4>
-                        <ScoreRow items={squatItems} category="squat" />
+                        <ScoreRow items={squatItems} />
                     </div>
 
                     {/* Balance */}
                     <div>
                         <h4 className="text-md font-medium text-primary mb-3">Single Leg Balance</h4>
-                        <ScoreRow items={balanceItems} category="balance" />
+                        <ScoreRow items={balanceItems} />
                     </div>
 
                     {/* Shoulder */}
                     <div>
                         <h4 className="text-md font-medium text-primary mb-3">Omuz Mobilite</h4>
-                        <ScoreRow items={shoulderItems} category="shoulder" />
+                        <ScoreRow items={shoulderItems} />
                     </div>
                 </div>
             </Card>
