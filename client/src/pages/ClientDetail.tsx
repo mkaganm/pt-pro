@@ -10,7 +10,8 @@ import {
     Plus,
     Trash2,
     Scale,
-    Edit2
+    Edit2,
+    ClipboardCheck
 } from 'lucide-react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
@@ -18,9 +19,10 @@ import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
 import TimePicker from '../components/common/TimePicker';
 import SessionCard from '../components/sessions/SessionCard';
+import AssessmentForm from '../components/assessment/AssessmentForm';
 import { useClientStore } from '../store/useClientStore';
 import { sessionsApi, clientsApi, measurementsApi } from '../api/endpoints';
-import type { Session, Measurement, CreateMeasurementRequest } from '../types';
+import type { Session, Measurement, CreateMeasurementRequest, Assessment, CreateAssessmentRequest } from '../types';
 
 export default function ClientDetail() {
     const { t } = useTranslation();
@@ -30,11 +32,13 @@ export default function ClientDetail() {
 
     const [sessions, setSessions] = useState<Session[]>([]);
     const [measurements, setMeasurements] = useState<Measurement[]>([]);
-    const [activeTab, setActiveTab] = useState<'sessions' | 'measurements'>('sessions');
+    const [assessment, setAssessment] = useState<Assessment | null>(null);
+    const [activeTab, setActiveTab] = useState<'sessions' | 'measurements' | 'assessment'>('sessions');
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
     const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
     const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+    const [isSavingAssessment, setIsSavingAssessment] = useState(false);
     const [sessionForm, setSessionForm] = useState({
         date: '',
         time: '',
@@ -59,6 +63,7 @@ export default function ClientDetail() {
             fetchClient(id);
             loadSessions();
             loadMeasurements();
+            loadAssessment();
         }
     }, [id, fetchClient]);
 
