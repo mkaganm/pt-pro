@@ -4,6 +4,7 @@ import { Plus, Calendar } from 'lucide-react';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
+import TimePicker from '../components/common/TimePicker';
 import SessionCard from '../components/sessions/SessionCard';
 import StatusBadge from '../components/common/StatusBadge';
 import { useSessionStore } from '../store/useSessionStore';
@@ -17,6 +18,7 @@ export default function Sessions() {
     const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
     // Separate date and time states
@@ -184,7 +186,7 @@ export default function Sessions() {
                         </select>
                     </div>
 
-                    {/* Separate Date and Time - with type="time" for manual entry */}
+                    {/* Separate Date and Time - with styled dropdown for time */}
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label={t('sessions.date')}
@@ -193,13 +195,22 @@ export default function Sessions() {
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                             required
                         />
-                        <Input
-                            label={t('sessions.time')}
-                            type="time"
-                            value={formData.time}
-                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                            required
-                        />
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                {t('sessions.time')}
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setIsTimePickerOpen(true)}
+                                className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-left focus:outline-none focus:border-primary transition-colors"
+                            >
+                                {formData.time ? (
+                                    <span className="text-primary font-semibold text-lg">{formData.time}</span>
+                                ) : (
+                                    <span className="text-gray-500">{t('sessions.selectTime')}</span>
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     <Input
@@ -246,6 +257,14 @@ export default function Sessions() {
                     ))}
                 </div>
             </Modal>
+
+            {/* Time Picker */}
+            <TimePicker
+                isOpen={isTimePickerOpen}
+                onClose={() => setIsTimePickerOpen(false)}
+                value={formData.time}
+                onChange={(time) => setFormData({ ...formData, time })}
+            />
         </div>
     );
 }

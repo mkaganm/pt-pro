@@ -16,6 +16,7 @@ import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
+import TimePicker from '../components/common/TimePicker';
 import SessionCard from '../components/sessions/SessionCard';
 import { useClientStore } from '../store/useClientStore';
 import { sessionsApi, clientsApi, measurementsApi } from '../api/endpoints';
@@ -33,6 +34,7 @@ export default function ClientDetail() {
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
     const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
     const [sessionForm, setSessionForm] = useState({
         date: '',
         time: '',
@@ -457,13 +459,22 @@ export default function ClientDetail() {
                             onChange={(e) => setSessionForm({ ...sessionForm, date: e.target.value })}
                             required
                         />
-                        <Input
-                            label={t('sessions.time')}
-                            type="time"
-                            value={sessionForm.time}
-                            onChange={(e) => setSessionForm({ ...sessionForm, time: e.target.value })}
-                            required
-                        />
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                {t('sessions.time')}
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setIsTimePickerOpen(true)}
+                                className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-left focus:outline-none focus:border-primary transition-colors"
+                            >
+                                {sessionForm.time ? (
+                                    <span className="text-primary font-semibold text-lg">{sessionForm.time}</span>
+                                ) : (
+                                    <span className="text-gray-500">{t('sessions.selectTime')}</span>
+                                )}
+                            </button>
+                        </div>
                     </div>
                     <Input
                         label={t('sessions.duration')}
@@ -588,6 +599,14 @@ export default function ClientDetail() {
                     </div>
                 </form>
             </Modal>
+
+            {/* Time Picker */}
+            <TimePicker
+                isOpen={isTimePickerOpen}
+                onClose={() => setIsTimePickerOpen(false)}
+                value={sessionForm.time}
+                onChange={(time) => setSessionForm({ ...sessionForm, time })}
+            />
         </div>
     );
 }

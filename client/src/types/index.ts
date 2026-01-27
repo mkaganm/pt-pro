@@ -126,3 +126,56 @@ export interface RegisterRequest {
     first_name: string;
     last_name: string;
 }
+
+// Assessment types
+export interface Assessment {
+    id: string;
+    client_id: string;
+
+    // PARQ Test
+    parq_heart_problem: boolean;
+    parq_chest_pain: boolean;
+    parq_dizziness: boolean;
+    parq_chronic_condition: boolean;
+    parq_medication: boolean;
+    parq_bone_joint: boolean;
+    parq_supervision: boolean;
+
+    // Posture Analysis (1-3)
+    posture_head_neck: number;
+    posture_shoulders: number;
+    posture_lphc: number;
+    posture_knee: number;
+    posture_foot: number;
+
+    // Push Up Test (1-3)
+    pushup_form: number;
+    pushup_scapular: number;
+    pushup_lordosis: number;
+    pushup_head_pos: number;
+
+    // Squat Test (1-3)
+    squat_feet_out: number;
+    squat_knees_in: number;
+    squat_lower_back: number;
+    squat_arms_forward: number;
+    squat_lean_forward: number;
+
+    // Balance Test (1-3)
+    balance_correct: number;
+    balance_knee_in: number;
+    balance_hip_rise: number;
+
+    // Shoulder Mobility (1-3)
+    shoulder_retraction: number;
+    shoulder_protraction: number;
+    shoulder_elevation: number;
+    shoulder_depression: number;
+
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export type CreateAssessmentRequest = Omit<Assessment, 'id' | 'client_id' | 'created_at' | 'updated_at'>;
+

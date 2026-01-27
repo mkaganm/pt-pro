@@ -29,6 +29,7 @@ func main() {
 		&models.Client{},
 		&models.Session{},
 		&models.Measurement{},
+		&models.Assessment{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -106,6 +107,13 @@ func main() {
 			dashboardHandler := handlers.NewDashboardHandler(db)
 			protected.GET("/dashboard", dashboardHandler.GetDashboard)
 			protected.GET("/calendar", dashboardHandler.GetCalendar)
+
+			// Assessment routes (nested under clients)
+			assessmentHandler := handlers.NewAssessmentHandler(db)
+			clients.GET("/:id/assessment", assessmentHandler.GetByClientID)
+			clients.POST("/:id/assessment", assessmentHandler.Create)
+			clients.PUT("/:id/assessment", assessmentHandler.Update)
+			clients.DELETE("/:id/assessment", assessmentHandler.Delete)
 		}
 	}
 

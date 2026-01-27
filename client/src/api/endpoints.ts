@@ -6,6 +6,8 @@ import type {
     CreateSessionRequest,
     Measurement,
     CreateMeasurementRequest,
+    Assessment,
+    CreateAssessmentRequest,
     DashboardData,
     SessionStatus,
 } from '../types';
@@ -19,6 +21,10 @@ export const clientsApi = {
     delete: (id: string) => api.delete(`/clients/${id}`),
     getMeasurements: (id: string) => api.get<Measurement[]>(`/clients/${id}/measurements`),
     createMeasurement: (id: string, data: CreateMeasurementRequest) => api.post<Measurement>(`/clients/${id}/measurements`, data),
+    getAssessment: (id: string) => api.get<Assessment>(`/clients/${id}/assessment`),
+    createAssessment: (id: string, data: CreateAssessmentRequest) => api.post<Assessment>(`/clients/${id}/assessment`, data),
+    updateAssessment: (id: string, data: CreateAssessmentRequest) => api.put<Assessment>(`/clients/${id}/assessment`, data),
+    deleteAssessment: (id: string) => api.delete(`/clients/${id}/assessment`),
 };
 
 // Session endpoints
@@ -44,3 +50,4 @@ export const dashboardApi = {
     getData: () => api.get<DashboardData>('/dashboard'),
     getCalendar: (from?: string, to?: string) => api.get<{ sessions: Session[] }>('/calendar', { params: { from, to } }),
 };
+
