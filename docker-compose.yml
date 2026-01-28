@@ -72,11 +72,33 @@ services:
     networks:
       - ptmate_network
 
+  # ==========================================
+  # pgAdmin - Database Management
+  # ==========================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ptmate_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@ptmate.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - ptmate_network
+
 volumes:
   postgres_data:
     name: ptmate_postgres_data
   go_modules:
     name: ptmate_go_modules
+  pgadmin_data:
+    name: ptmate_pgadmin_data
 
 networks:
   ptmate_network:
