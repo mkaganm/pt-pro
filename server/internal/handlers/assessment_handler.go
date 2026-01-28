@@ -20,16 +20,33 @@ func NewAssessmentHandler(db *gorm.DB) *AssessmentHandler {
 	return &AssessmentHandler{db: db}
 }
 
-// GetByClientID returns an assessment by client ID
-func (h *AssessmentHandler) GetByClientID(c *gin.Context) {
+// GetAllByClientID returns all assessments for a client (history)
+func (h *AssessmentHandler) GetAllByClientID(c *gin.Context) {
 	clientID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
 		return
 	}
 
+	var assessments []models.Assessment
+	if err := h.db.Where("client_id = ?", clientID).Order("created_at DESC").Find(&assessments).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch assessments"})
+		return
+	}
+
+	c.JSON(http.StatusOK, assessments)
+}
+
+// GetByID returns an assessment by its ID
+func (h *AssessmentHandler) GetByID(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid assessment ID"})
+		return
+	}
+
 	var assessment models.Assessment
-	if err := h.db.Where("client_id = ?", clientID).First(&assessment).Error; err != nil {
+	if err := h.db.First(&assessment, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Assessment not found"})
 			return
@@ -41,7 +58,7 @@ func (h *AssessmentHandler) GetByClientID(c *gin.Context) {
 	c.JSON(http.StatusOK, assessment)
 }
 
-// Create creates a new assessment for a client
+// Create creates a new assessment for a client (allows multiple)
 func (h *AssessmentHandler) Create(c *gin.Context) {
 	clientID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -57,13 +74,6 @@ func (h *AssessmentHandler) Create(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch client"})
-		return
-	}
-
-	// Check if assessment already exists
-	var existing models.Assessment
-	if err := h.db.Where("client_id = ?", clientID).First(&existing).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Assessment already exists for this client"})
 		return
 	}
 
@@ -114,16 +124,16 @@ func (h *AssessmentHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, assessment)
 }
 
-// Update updates an existing assessment
+// Update updates an existing assessment by its ID
 func (h *AssessmentHandler) Update(c *gin.Context) {
-	clientID, err := uuid.Parse(c.Param("id"))
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid assessment ID"})
 		return
 	}
 
 	var assessment models.Assessment
-	if err := h.db.Where("client_id = ?", clientID).First(&assessment).Error; err != nil {
+	if err := h.db.First(&assessment, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Assessment not found"})
 			return
@@ -177,15 +187,15 @@ func (h *AssessmentHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, assessment)
 }
 
-// Delete deletes an assessment
+// Delete deletes an assessment by its ID
 func (h *AssessmentHandler) Delete(c *gin.Context) {
-	clientID, err := uuid.Parse(c.Param("id"))
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid assessment ID"})
 		return
 	}
 
-	result := h.db.Where("client_id = ?", clientID).Delete(&models.Assessment{})
+	result := h.db.Delete(&models.Assessment{}, id)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete assessment"})
 		return

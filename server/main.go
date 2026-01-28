@@ -9,6 +9,7 @@ import (
 	"ptmate/internal/handlers"
 	"ptmate/internal/middleware"
 	"ptmate/internal/models"
+	"ptmate/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,6 +31,8 @@ func main() {
 		&models.Session{},
 		&models.Measurement{},
 		&models.Assessment{},
+		&models.PhotoGroup{},
+		&models.Photo{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -108,12 +111,42 @@ func main() {
 			protected.GET("/dashboard", dashboardHandler.GetDashboard)
 			protected.GET("/calendar", dashboardHandler.GetCalendar)
 
-			// Assessment routes (nested under clients)
+			// Assessment routes
 			assessmentHandler := handlers.NewAssessmentHandler(db)
-			clients.GET("/:id/assessment", assessmentHandler.GetByClientID)
-			clients.POST("/:id/assessment", assessmentHandler.Create)
-			clients.PUT("/:id/assessment", assessmentHandler.Update)
-			clients.DELETE("/:id/assessment", assessmentHandler.Delete)
+			clients.GET("/:id/assessments", assessmentHandler.GetAllByClientID)
+			clients.POST("/:id/assessments", assessmentHandler.Create)
+
+			// Individual assessment routes
+			assessments := protected.Group("/assessments")
+			{
+				assessments.GET("/:id", assessmentHandler.GetByID)
+				assessments.PUT("/:id", assessmentHandler.Update)
+				assessments.DELETE("/:id", assessmentHandler.Delete)
+			}
+
+			// Photo routes
+			var r2Service *services.R2Service
+			if cfg.R2AccountID != "" && cfg.R2AccessKey != "" {
+				r2Service, err = services.NewR2Service(
+					cfg.R2AccountID,
+					cfg.R2AccessKey,
+					cfg.R2SecretKey,
+					cfg.R2Bucket,
+					cfg.R2PublicURL,
+				)
+				if err != nil {
+					log.Printf("Warning: R2 service not initialized: %v", err)
+				}
+			}
+			photoHandler := handlers.NewPhotoHandler(db, r2Service)
+			clients.GET("/:id/photos", photoHandler.GetPhotoGroups)
+			clients.POST("/:id/photos", photoHandler.UploadPhotos)
+
+			// Photo group routes
+			photoGroups := protected.Group("/photo-groups")
+			{
+				photoGroups.DELETE("/:id", photoHandler.DeletePhotoGroup)
+			}
 		}
 	}
 

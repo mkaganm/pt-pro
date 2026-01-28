@@ -179,3 +179,22 @@ export interface Assessment {
 
 export type CreateAssessmentRequest = Omit<Assessment, 'id' | 'client_id' | 'created_at' | 'updated_at'>;
 
+// Photo types
+export interface Photo {
+    id: string;
+    photo_group_id: string;
+    url: string;
+    file_name: string;
+    file_size: number;
+    content_type: string;
+    created_at: string;
+}
+
+export interface PhotoGroup {
+    id: string;
+    client_id: string;
+    notes?: string;
+    photos: Photo[];
+    created_at: string;
+    updated_at: string;
+}
