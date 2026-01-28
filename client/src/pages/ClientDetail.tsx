@@ -10,16 +10,22 @@ import {
     Plus,
     Trash2,
     Scale,
-    Edit2
+    Edit2,
+    ClipboardCheck,
+    Camera,
+    Upload,
+    X
 } from 'lucide-react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
+import TimePicker from '../components/common/TimePicker';
 import SessionCard from '../components/sessions/SessionCard';
+import AssessmentForm from '../components/assessment/AssessmentForm';
 import { useClientStore } from '../store/useClientStore';
-import { sessionsApi, clientsApi, measurementsApi } from '../api/endpoints';
-import type { Session, Measurement, CreateMeasurementRequest } from '../types';
+import { sessionsApi, clientsApi, measurementsApi, assessmentsApi, photoGroupsApi } from '../api/endpoints';
+import type { Session, Measurement, CreateMeasurementRequest, Assessment, CreateAssessmentRequest, PhotoGroup } from '../types';
 
 export default function ClientDetail() {
     const { t } = useTranslation();
@@ -29,10 +35,19 @@ export default function ClientDetail() {
 
     const [sessions, setSessions] = useState<Session[]>([]);
     const [measurements, setMeasurements] = useState<Measurement[]>([]);
-    const [activeTab, setActiveTab] = useState<'sessions' | 'measurements'>('sessions');
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [photoGroups, setPhotoGroups] = useState<PhotoGroup[]>([]);
+    const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+    const [isAssessmentFormOpen, setIsAssessmentFormOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'sessions' | 'measurements' | 'assessment' | 'photos'>('sessions');
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
     const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+    const [isSavingAssessment, setIsSavingAssessment] = useState(false);
+    const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
+    const [photoNotes, setPhotoNotes] = useState('');
+    const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
     const [sessionForm, setSessionForm] = useState({
         date: '',
         time: '',
@@ -57,6 +72,8 @@ export default function ClientDetail() {
             fetchClient(id);
             loadSessions();
             loadMeasurements();
+            loadAssessments();
+            loadPhotoGroups();
         }
     }, [id, fetchClient]);
 
@@ -76,6 +93,106 @@ export default function ClientDetail() {
         } catch (error) {
             console.error('Failed to load measurements:', error);
         }
+    };
+
+    const loadAssessments = async () => {
+        try {
+            const response = await clientsApi.getAssessments(id!);
+            setAssessments(response.data);
+        } catch (error) {
+            console.error('Failed to load assessments:', error);
+            setAssessments([]);
+        }
+    };
+
+    const loadPhotoGroups = async () => {
+        try {
+            const response = await clientsApi.getPhotoGroups(id!);
+            setPhotoGroups(response.data);
+        } catch (error) {
+            console.error('Failed to load photo groups:', error);
+            setPhotoGroups([]);
+        }
+    };
+
+    const handleUploadPhotos = async () => {
+        if (selectedPhotos.length === 0) return;
+        setIsUploadingPhotos(true);
+        try {
+            const formData = new FormData();
+            selectedPhotos.forEach((file) => {
+                formData.append('photos', file);
+            });
+            if (photoNotes) {
+                formData.append('notes', photoNotes);
+            }
+            await clientsApi.uploadPhotos(id!, formData);
+            loadPhotoGroups();
+            setSelectedPhotos([]);
+            setPhotoNotes('');
+        } catch (error) {
+            console.error('Failed to upload photos:', error);
+        } finally {
+            setIsUploadingPhotos(false);
+        }
+    };
+
+    const handleDeletePhotoGroup = async (groupId: string) => {
+        if (!window.confirm(t('common.confirmDelete'))) return;
+        try {
+            await photoGroupsApi.delete(groupId);
+            loadPhotoGroups();
+        } catch (error) {
+            console.error('Failed to delete photo group:', error);
+        }
+    };
+
+    const handleSaveAssessment = async (data: CreateAssessmentRequest) => {
+        setIsSavingAssessment(true);
+        try {
+            if (selectedAssessment) {
+                await assessmentsApi.update(selectedAssessment.id, data);
+            } else {
+                await clientsApi.createAssessment(id!, data);
+            }
+            loadAssessments();
+            setIsAssessmentFormOpen(false);
+            setSelectedAssessment(null);
+        } catch (error) {
+            console.error('Failed to save assessment:', error);
+        } finally {
+            setIsSavingAssessment(false);
+        }
+    };
+
+    const handleEditAssessment = (assessment: Assessment) => {
+        setSelectedAssessment(assessment);
+        setIsAssessmentFormOpen(true);
+    };
+
+    const handleDeleteAssessment = async (assessmentId: string) => {
+        if (!window.confirm(t('common.confirmDelete'))) return;
+        try {
+            await assessmentsApi.delete(assessmentId);
+            loadAssessments();
+        } catch (error) {
+            console.error('Failed to delete assessment:', error);
+        }
+    };
+
+    const handleNewAssessment = () => {
+        setSelectedAssessment(null);
+        setIsAssessmentFormOpen(true);
+    };
+
+    const calculatePostureScore = (a: Assessment) => {
+        return a.posture_head_neck + a.posture_shoulders + a.posture_lphc + a.posture_knee + a.posture_foot;
+    };
+
+    const getScoreLevel = (score: number) => {
+        if (score <= 6) return { label: 'Kötü', color: 'text-red-400', bg: 'bg-red-500/20' };
+        if (score <= 12) return { label: 'Orta', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
+        return { label: 'İyi', color: 'text-green-400', bg: 'bg-green-500/20' };
     };
 
     const handleAddSession = async (e: React.FormEvent) => {
@@ -309,6 +426,30 @@ export default function ClientDetail() {
                         {t('clients.measurements')}
                     </div>
                 </button>
+                <button
+                    onClick={() => setActiveTab('assessment')}
+                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'assessment'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <ClipboardCheck className="w-4 h-4" />
+                        Değerlendirme
+                    </div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('photos')}
+                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'photos'
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-gray-400 hover:text-white'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <Camera className="w-4 h-4" />
+                        Fotoğraflar
+                    </div>
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -442,6 +583,206 @@ export default function ClientDetail() {
                 </div>
             )}
 
+            {activeTab === 'assessment' && (
+                <div className="space-y-4">
+                    {!isAssessmentFormOpen ? (
+                        <>
+                            <Button
+                                icon={<Plus className="w-5 h-5" />}
+                                onClick={handleNewAssessment}
+                            >
+                                Yeni Değerlendirme
+                            </Button>
+
+                            {assessments.length === 0 ? (
+                                <Card className="text-center py-8">
+                                    <p className="text-gray-400">Henüz değerlendirme yapılmamış</p>
+                                </Card>
+                            ) : (
+                                <div className="space-y-3">
+                                    {assessments.map((assessment) => {
+                                        const score = calculatePostureScore(assessment);
+                                        const level = getScoreLevel(score);
+                                        return (
+                                            <Card key={assessment.id} className="hover:border-primary/50 transition-colors">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-12 h-12 rounded-lg ${level.bg} flex items-center justify-center`}>
+                                                            <ClipboardCheck className={`w-6 h-6 ${level.color}`} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-white font-medium">
+                                                                {new Date(assessment.created_at).toLocaleDateString('tr-TR', {
+                                                                    year: 'numeric',
+                                                                    month: 'long',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 text-sm">
+                                                                <span className={`${level.color}`}>Postür: {score} puan - {level.label}</span>
+                                                                {assessment.notes && (
+                                                                    <span className="text-gray-500">• {assessment.notes.slice(0, 50)}{assessment.notes.length > 50 ? '...' : ''}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleEditAssessment(assessment)}
+                                                            className="p-2 text-gray-400 hover:text-white hover:bg-dark-200 rounded-lg transition-colors"
+                                                            title="Düzenle"
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteAssessment(assessment.id)}
+                                                            className="p-2 text-gray-400 hover:text-red-400 hover:bg-dark-200 rounded-lg transition-colors"
+                                                            title="Sil"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                variant="ghost"
+                                onClick={() => { setIsAssessmentFormOpen(false); setSelectedAssessment(null); }}
+                                icon={<ArrowLeft className="w-4 h-4" />}
+                            >
+                                Geri
+                            </Button>
+                            <AssessmentForm
+                                assessment={selectedAssessment}
+                                onSave={handleSaveAssessment}
+                                isLoading={isSavingAssessment}
+                            />
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Photos Tab */}
+            {activeTab === 'photos' && (
+                <div className="space-y-4">
+                    {/* Upload Section */}
+                    <Card>
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-white">Yeni Fotoğraf Yükle</h3>
+                            <div className="flex flex-col gap-4">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={(e) => {
+                                        const files = Array.from(e.target.files || []).slice(0, 5);
+                                        setSelectedPhotos(files);
+                                    }}
+                                    className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-dark-500 hover:file:bg-primary/80 cursor-pointer"
+                                />
+                                {selectedPhotos.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedPhotos.map((file, idx) => (
+                                            <div key={idx} className="relative">
+                                                <img
+                                                    src={URL.createObjectURL(file)}
+                                                    alt={file.name}
+                                                    className="w-20 h-20 object-cover rounded-lg"
+                                                />
+                                                <button
+                                                    onClick={() => setSelectedPhotos(prev => prev.filter((_, i) => i !== idx))}
+                                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+                                                >
+                                                    <X className="w-3 h-3 text-white" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <Input
+                                    label="Not (isteğe bağlı)"
+                                    value={photoNotes}
+                                    onChange={(e) => setPhotoNotes(e.target.value)}
+                                    placeholder="Fotoğraflar için not ekleyin..."
+                                />
+                                <Button
+                                    onClick={handleUploadPhotos}
+                                    disabled={selectedPhotos.length === 0 || isUploadingPhotos}
+                                    icon={<Upload className="w-4 h-4" />}
+                                >
+                                    {isUploadingPhotos ? 'Yükleniyor...' : `${selectedPhotos.length} Fotoğraf Yükle`}
+                                </Button>
+                                <p className="text-xs text-gray-500">Maksimum 5 fotoğraf seçebilirsiniz</p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Photo History */}
+                    {photoGroups.length === 0 ? (
+                        <Card className="text-center py-8">
+                            <p className="text-gray-400">Henüz fotoğraf yüklenmemiş</p>
+                        </Card>
+                    ) : (
+                        <div className="space-y-4">
+                            {photoGroups.map((group) => (
+                                <Card key={group.id}>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Camera className="w-5 h-5 text-primary" />
+                                                <div>
+                                                    <p className="text-white font-medium">
+                                                        {new Date(group.created_at).toLocaleDateString('tr-TR', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </p>
+                                                    <p className="text-sm text-gray-400">{group.photos.length} fotoğraf</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeletePhotoGroup(group.id)}
+                                                className="p-2 text-gray-400 hover:text-red-400 hover:bg-dark-200 rounded-lg transition-colors"
+                                                title="Grubu Sil"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        {group.notes && (
+                                            <p className="text-sm text-gray-400">{group.notes}</p>
+                                        )}
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                            {group.photos.map((photo) => (
+                                                <a
+                                                    key={photo.id}
+                                                    href={photo.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="aspect-square rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
+                                                >
+                                                    <img
+                                                        src={photo.url}
+                                                        alt={photo.file_name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Add Session Modal */}
             <Modal
                 isOpen={isSessionModalOpen}
@@ -457,13 +798,22 @@ export default function ClientDetail() {
                             onChange={(e) => setSessionForm({ ...sessionForm, date: e.target.value })}
                             required
                         />
-                        <Input
-                            label={t('sessions.time')}
-                            type="time"
-                            value={sessionForm.time}
-                            onChange={(e) => setSessionForm({ ...sessionForm, time: e.target.value })}
-                            required
-                        />
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                {t('sessions.time')}
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setIsTimePickerOpen(true)}
+                                className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-left focus:outline-none focus:border-primary transition-colors"
+                            >
+                                {sessionForm.time ? (
+                                    <span className="text-primary font-semibold text-lg">{sessionForm.time}</span>
+                                ) : (
+                                    <span className="text-gray-500">{t('sessions.selectTime')}</span>
+                                )}
+                            </button>
+                        </div>
                     </div>
                     <Input
                         label={t('sessions.duration')}
@@ -588,6 +938,14 @@ export default function ClientDetail() {
                     </div>
                 </form>
             </Modal>
+
+            {/* Time Picker */}
+            <TimePicker
+                isOpen={isTimePickerOpen}
+                onClose={() => setIsTimePickerOpen(false)}
+                value={sessionForm.time}
+                onChange={(time) => setSessionForm({ ...sessionForm, time })}
+            />
         </div>
     );
 }

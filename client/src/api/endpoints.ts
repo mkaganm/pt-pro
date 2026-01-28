@@ -6,8 +6,11 @@ import type {
     CreateSessionRequest,
     Measurement,
     CreateMeasurementRequest,
+    Assessment,
+    CreateAssessmentRequest,
     DashboardData,
     SessionStatus,
+    PhotoGroup,
 } from '../types';
 
 // Client endpoints
@@ -19,6 +22,24 @@ export const clientsApi = {
     delete: (id: string) => api.delete(`/clients/${id}`),
     getMeasurements: (id: string) => api.get<Measurement[]>(`/clients/${id}/measurements`),
     createMeasurement: (id: string, data: CreateMeasurementRequest) => api.post<Measurement>(`/clients/${id}/measurements`, data),
+    getAssessments: (id: string) => api.get<Assessment[]>(`/clients/${id}/assessments`),
+    createAssessment: (id: string, data: CreateAssessmentRequest) => api.post<Assessment>(`/clients/${id}/assessments`, data),
+    getPhotoGroups: (id: string) => api.get<PhotoGroup[]>(`/clients/${id}/photos`),
+    uploadPhotos: (id: string, formData: FormData) => api.post<PhotoGroup>(`/clients/${id}/photos`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+};
+
+// Assessment endpoints
+export const assessmentsApi = {
+    getById: (id: string) => api.get<Assessment>(`/assessments/${id}`),
+    update: (id: string, data: CreateAssessmentRequest) => api.put<Assessment>(`/assessments/${id}`, data),
+    delete: (id: string) => api.delete(`/assessments/${id}`),
+};
+
+// Photo group endpoints
+export const photoGroupsApi = {
+    delete: (id: string) => api.delete(`/photo-groups/${id}`),
 };
 
 // Session endpoints

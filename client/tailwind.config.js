@@ -8,19 +8,19 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Primary accent - Neon Lime
+                // Primary accent - Crimson Red
                 primary: {
-                    DEFAULT: '#CCFF00',
-                    50: '#F5FFD6',
-                    100: '#EFFFAD',
-                    200: '#E3FF85',
-                    300: '#D8FF5C',
-                    400: '#CCFF33',
-                    500: '#CCFF00',
-                    600: '#A3CC00',
-                    700: '#7A9900',
-                    800: '#526600',
-                    900: '#293300',
+                    DEFAULT: '#FF3B3B',
+                    50: '#FFE5E5',
+                    100: '#FFCCCC',
+                    200: '#FF9999',
+                    300: '#FF6666',
+                    400: '#FF4D4D',
+                    500: '#FF3B3B',
+                    600: '#E62E2E',
+                    700: '#CC2424',
+                    800: '#991B1B',
+                    900: '#661212',
                 },
                 // Dark mode backgrounds
                 dark: {
