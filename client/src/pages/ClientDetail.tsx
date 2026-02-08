@@ -190,9 +190,9 @@ export default function ClientDetail() {
     };
 
     const getScoreLevel = (score: number) => {
-        if (score <= 6) return { label: 'Kötü', color: 'text-red-400', bg: 'bg-red-500/20' };
-        if (score <= 12) return { label: 'Orta', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
-        return { label: 'İyi', color: 'text-green-400', bg: 'bg-green-500/20' };
+        if (score <= 6) return { labelKey: 'assessment.scoreBad', color: 'text-red-400', bg: 'bg-red-500/20' };
+        if (score <= 12) return { labelKey: 'assessment.scoreMedium', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
+        return { labelKey: 'assessment.scoreGood', color: 'text-green-400', bg: 'bg-green-500/20' };
     };
 
     const handleAddSession = async (e: React.FormEvent) => {
@@ -435,7 +435,7 @@ export default function ClientDetail() {
                 >
                     <div className="flex items-center gap-2">
                         <ClipboardCheck className="w-4 h-4" />
-                        Değerlendirme
+                        {t('clients.assessment')}
                     </div>
                 </button>
                 <button
@@ -447,7 +447,7 @@ export default function ClientDetail() {
                 >
                     <div className="flex items-center gap-2">
                         <Camera className="w-4 h-4" />
-                        Fotoğraflar
+                        {t('clients.photos')}
                     </div>
                 </button>
             </div>
@@ -591,12 +591,12 @@ export default function ClientDetail() {
                                 icon={<Plus className="w-5 h-5" />}
                                 onClick={handleNewAssessment}
                             >
-                                Yeni Değerlendirme
+                                {t('assessment.newAssessment')}
                             </Button>
 
                             {assessments.length === 0 ? (
                                 <Card className="text-center py-8">
-                                    <p className="text-gray-400">Henüz değerlendirme yapılmamış</p>
+                                    <p className="text-gray-400">{t('assessment.noAssessments')}</p>
                                 </Card>
                             ) : (
                                 <div className="space-y-3">
@@ -619,7 +619,7 @@ export default function ClientDetail() {
                                                                 })}
                                                             </p>
                                                             <div className="flex items-center gap-2 text-sm">
-                                                                <span className={`${level.color}`}>Postür: {score} puan - {level.label}</span>
+                                                                <span className={`${level.color}`}>{t('assessment.postureScore')}: {score} {t('assessment.point')} - {t(level.labelKey)}</span>
                                                                 {assessment.notes && (
                                                                     <span className="text-gray-500">• {assessment.notes.slice(0, 50)}{assessment.notes.length > 50 ? '...' : ''}</span>
                                                                 )}
@@ -630,14 +630,14 @@ export default function ClientDetail() {
                                                         <button
                                                             onClick={() => handleEditAssessment(assessment)}
                                                             className="p-2 text-gray-400 hover:text-white hover:bg-dark-200 rounded-lg transition-colors"
-                                                            title="Düzenle"
+                                                            title={t('common.edit')}
                                                         >
                                                             <Edit2 className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteAssessment(assessment.id)}
                                                             className="p-2 text-gray-400 hover:text-red-400 hover:bg-dark-200 rounded-lg transition-colors"
-                                                            title="Sil"
+                                                            title={t('common.delete')}
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
@@ -656,7 +656,7 @@ export default function ClientDetail() {
                                 onClick={() => { setIsAssessmentFormOpen(false); setSelectedAssessment(null); }}
                                 icon={<ArrowLeft className="w-4 h-4" />}
                             >
-                                Geri
+                                {t('common.back')}
                             </Button>
                             <AssessmentForm
                                 assessment={selectedAssessment}
@@ -674,7 +674,7 @@ export default function ClientDetail() {
                     {/* Upload Section */}
                     <Card>
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-white">Yeni Fotoğraf Yükle</h3>
+                            <h3 className="text-lg font-semibold text-white">{t('photos.uploadNew')}</h3>
                             <div className="flex flex-col gap-4">
                                 <input
                                     type="file"
@@ -706,19 +706,19 @@ export default function ClientDetail() {
                                     </div>
                                 )}
                                 <Input
-                                    label="Not (isteğe bağlı)"
+                                    label={t('photos.noteLabel')}
                                     value={photoNotes}
                                     onChange={(e) => setPhotoNotes(e.target.value)}
-                                    placeholder="Fotoğraflar için not ekleyin..."
+                                    placeholder={t('photos.notePlaceholder')}
                                 />
                                 <Button
                                     onClick={handleUploadPhotos}
                                     disabled={selectedPhotos.length === 0 || isUploadingPhotos}
                                     icon={<Upload className="w-4 h-4" />}
                                 >
-                                    {isUploadingPhotos ? 'Yükleniyor...' : `${selectedPhotos.length} Fotoğraf Yükle`}
+                                    {isUploadingPhotos ? t('common.uploading') : `${selectedPhotos.length} ${t('photos.uploadButton')}`}
                                 </Button>
-                                <p className="text-xs text-gray-500">Maksimum 5 fotoğraf seçebilirsiniz</p>
+                                <p className="text-xs text-gray-500">{t('photos.maxPhotos')}</p>
                             </div>
                         </div>
                     </Card>
@@ -726,7 +726,7 @@ export default function ClientDetail() {
                     {/* Photo History */}
                     {photoGroups.length === 0 ? (
                         <Card className="text-center py-8">
-                            <p className="text-gray-400">Henüz fotoğraf yüklenmemiş</p>
+                            <p className="text-gray-400">{t('photos.noPhotos')}</p>
                         </Card>
                     ) : (
                         <div className="space-y-4">
@@ -744,13 +744,13 @@ export default function ClientDetail() {
                                                             day: 'numeric'
                                                         })}
                                                     </p>
-                                                    <p className="text-sm text-gray-400">{group.photos.length} fotoğraf</p>
+                                                    <p className="text-sm text-gray-400">{group.photos.length} {t('photos.photoCount')}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => handleDeletePhotoGroup(group.id)}
                                                 className="p-2 text-gray-400 hover:text-red-400 hover:bg-dark-200 rounded-lg transition-colors"
-                                                title="Grubu Sil"
+                                                title={t('photos.deleteGroup')}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
