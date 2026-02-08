@@ -44,6 +44,7 @@ services:
       - DB_NAME=${DB_NAME}
       - GIN_MODE=debug
       - PORT=8080
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
     volumes:
       - ./server:/app
       - go_modules:/go/pkg/mod
