@@ -65,7 +65,7 @@ export default function Register() {
                         {error && (
                             <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
                                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                                <p className="text-sm">{error}</p>
+                                <p className="text-sm">{error.startsWith('auth.') ? t(error) : error}</p>
                             </div>
                         )}
 

@@ -57,7 +57,7 @@ export const useAuthStore = create<AuthStore>()(
                     });
                 } catch (error: any) {
                     set({
-                        error: error.response?.data?.error || 'Login failed',
+                        error: error.response?.data?.error || 'auth.loginFailed',
                         isLoading: false
                     });
                     throw error;
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthStore>()(
                     });
                 } catch (error: any) {
                     set({
-                        error: error.response?.data?.error || 'Registration failed',
+                        error: error.response?.data?.error || 'auth.registrationFailed',
                         isLoading: false
                     });
                     throw error;

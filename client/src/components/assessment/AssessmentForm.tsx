@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import Button from '../common/Button';
 import Card from '../common/Card';
@@ -42,54 +43,55 @@ const defaultAssessment: CreateAssessmentRequest = {
     notes: '',
 };
 
-const parqQuestions = [
-    { key: 'parq_heart_problem', label: 'Doktorunuz kalbinizde bir sorun olduğunu söyledi mi veya yüksek tansiyonunuz var mı?' },
-    { key: 'parq_chest_pain', label: 'Dinlenirken veya egzersiz sırasında göğsünüzde ağrı hisseder misiniz?' },
-    { key: 'parq_dizziness', label: 'Baş dönmesine bağlı denge kaybı veya son 12 ayda bilinç kaybı yaşadınız mı?' },
-    { key: 'parq_chronic_condition', label: 'Diğer bir kronik durum tanısı aldınız mı?' },
-    { key: 'parq_medication', label: 'Kronik bir durum için ilaç kullanıyor musunuz?' },
-    { key: 'parq_bone_joint', label: 'Hareket kabiliyetinizi etkileyen kemik, eklem veya doku probleminiz var mı?' },
-    { key: 'parq_supervision', label: 'Doktorunuz aktiviteyi sadece gözetim altında yapabileceğinizi söyledi mi?' },
-];
-
-const postureItems = [
-    { key: 'posture_head_neck', label: 'Baş ve Boyun' },
-    { key: 'posture_shoulders', label: 'Omuzlar ve Torasik Omurga' },
-    { key: 'posture_lphc', label: 'Lumbo-Pelvik-Kalça Kompleksi' },
-    { key: 'posture_knee', label: 'Diz' },
-    { key: 'posture_foot', label: 'Ayak ve Ayak Bileği' },
-];
-
-const pushupItems = [
-    { key: 'pushup_form', label: 'Doğru Form' },
-    { key: 'pushup_scapular', label: 'Skapular kanatlaşma' },
-    { key: 'pushup_lordosis', label: 'Aşırı lordoz' },
-    { key: 'pushup_head_pos', label: 'Baş pozisyonu' },
-];
-
-const squatItems = [
-    { key: 'squat_feet_out', label: 'Ayaklar dışa dönük' },
-    { key: 'squat_knees_in', label: 'Dizler içe dönük' },
-    { key: 'squat_lower_back', label: 'Bel kavisi' },
-    { key: 'squat_arms_forward', label: 'Kollar düşük' },
-    { key: 'squat_lean_forward', label: 'Fazla öne eğilme' },
-];
-
-const balanceItems = [
-    { key: 'balance_correct', label: 'Doğru' },
-    { key: 'balance_knee_in', label: 'Diz içe dönüyor' },
-    { key: 'balance_hip_rise', label: 'Kalça yükselmesi' },
-];
-
-const shoulderItems = [
-    { key: 'shoulder_retraction', label: 'Retraction (Geri çekilme)' },
-    { key: 'shoulder_protraction', label: 'Protraction (Öne uzanma)' },
-    { key: 'shoulder_elevation', label: 'Elevation (Yükselme)' },
-    { key: 'shoulder_depression', label: 'Depression (Alçalma)' },
-];
-
 export default function AssessmentForm({ assessment, onSave, isLoading }: AssessmentFormProps) {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState<CreateAssessmentRequest>(defaultAssessment);
+
+    const parqQuestions = [
+        { key: 'parq_heart_problem', labelKey: 'assessment.parqHeartProblem' },
+        { key: 'parq_chest_pain', labelKey: 'assessment.parqChestPain' },
+        { key: 'parq_dizziness', labelKey: 'assessment.parqDizziness' },
+        { key: 'parq_chronic_condition', labelKey: 'assessment.parqChronicCondition' },
+        { key: 'parq_medication', labelKey: 'assessment.parqMedication' },
+        { key: 'parq_bone_joint', labelKey: 'assessment.parqBoneJoint' },
+        { key: 'parq_supervision', labelKey: 'assessment.parqSupervision' },
+    ];
+
+    const postureItems = [
+        { key: 'posture_head_neck', labelKey: 'assessment.postureHeadNeck' },
+        { key: 'posture_shoulders', labelKey: 'assessment.postureShoulders' },
+        { key: 'posture_lphc', labelKey: 'assessment.postureLphc' },
+        { key: 'posture_knee', labelKey: 'assessment.postureKnee' },
+        { key: 'posture_foot', labelKey: 'assessment.postureFoot' },
+    ];
+
+    const pushupItems = [
+        { key: 'pushup_form', labelKey: 'assessment.pushupForm' },
+        { key: 'pushup_scapular', labelKey: 'assessment.pushupScapular' },
+        { key: 'pushup_lordosis', labelKey: 'assessment.pushupLordosis' },
+        { key: 'pushup_head_pos', labelKey: 'assessment.pushupHeadPos' },
+    ];
+
+    const squatItems = [
+        { key: 'squat_feet_out', labelKey: 'assessment.squatFeetOut' },
+        { key: 'squat_knees_in', labelKey: 'assessment.squatKneesIn' },
+        { key: 'squat_lower_back', labelKey: 'assessment.squatLowerBack' },
+        { key: 'squat_arms_forward', labelKey: 'assessment.squatArmsForward' },
+        { key: 'squat_lean_forward', labelKey: 'assessment.squatLeanForward' },
+    ];
+
+    const balanceItems = [
+        { key: 'balance_correct', labelKey: 'assessment.balanceCorrect' },
+        { key: 'balance_knee_in', labelKey: 'assessment.balanceKneeIn' },
+        { key: 'balance_hip_rise', labelKey: 'assessment.balanceHipRise' },
+    ];
+
+    const shoulderItems = [
+        { key: 'shoulder_retraction', labelKey: 'assessment.shoulderRetraction' },
+        { key: 'shoulder_protraction', labelKey: 'assessment.shoulderProtraction' },
+        { key: 'shoulder_elevation', labelKey: 'assessment.shoulderElevation' },
+        { key: 'shoulder_depression', labelKey: 'assessment.shoulderDepression' },
+    ];
 
     useEffect(() => {
         if (assessment) {
@@ -146,9 +148,9 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
     };
 
     const getScoreLevel = (score: number) => {
-        if (score <= 6) return { label: 'Kötü', color: 'text-red-400', bg: 'bg-red-500/20' };
-        if (score <= 12) return { label: 'Orta', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
-        return { label: 'İyi', color: 'text-green-400', bg: 'bg-green-500/20' };
+        if (score <= 6) return { labelKey: 'assessment.scoreBad', color: 'text-red-400', bg: 'bg-red-500/20' };
+        if (score <= 12) return { labelKey: 'assessment.scoreMedium', color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
+        return { labelKey: 'assessment.scoreGood', color: 'text-green-400', bg: 'bg-green-500/20' };
     };
 
     const parqHasYes = Object.keys(formData).filter(k => k.startsWith('parq_')).some(k => formData[k as keyof CreateAssessmentRequest] === true);
@@ -156,7 +158,7 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
     const scoreLevel = getScoreLevel(postureScore);
 
     const ScoreButton = ({ itemKey, value, currentValue }: { itemKey: string; value: number; currentValue: number }) => {
-        const labels = ['', 'Kötü', 'Orta', 'İyi'];
+        const labels = ['', t('assessment.scoreBad'), t('assessment.scoreMedium'), t('assessment.scoreGood')];
         const colors = ['', 'bg-red-500/30 border-red-500', 'bg-yellow-500/30 border-yellow-500', 'bg-green-500/30 border-green-500'];
         const isSelected = currentValue === value;
 
@@ -174,11 +176,11 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
         );
     };
 
-    const ScoreRow = ({ items }: { items: { key: string; label: string }[] }) => (
+    const ScoreRow = ({ items }: { items: { key: string; labelKey: string }[] }) => (
         <div className="space-y-3">
             {items.map(item => (
                 <div key={item.key} className="flex items-center gap-4">
-                    <span className="flex-1 text-sm text-gray-300">{item.label}</span>
+                    <span className="flex-1 text-sm text-gray-300">{t(item.labelKey)}</span>
                     <div className="flex gap-2 w-48">
                         <ScoreButton itemKey={item.key} value={1} currentValue={formData[item.key as keyof CreateAssessmentRequest] as number} />
                         <ScoreButton itemKey={item.key} value={2} currentValue={formData[item.key as keyof CreateAssessmentRequest] as number} />
@@ -195,21 +197,21 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
             <Card>
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-white">1. PARQ Test</h3>
+                        <h3 className="text-lg font-semibold text-white">1. {t('assessment.parqTitle')}</h3>
                         {parqHasYes && (
                             <span className="flex items-center gap-1 text-yellow-400 text-sm">
                                 <AlertTriangle className="w-4 h-4" />
-                                Dikkat Gerektiriyor
+                                {t('assessment.parqWarning')}
                             </span>
                         )}
                     </div>
-                    <p className="text-sm text-gray-400">Fiziksel Aktivite Hazır Oluşluk Anketi</p>
+                    <p className="text-sm text-gray-400">{t('assessment.parqDescription')}</p>
 
                     <div className="space-y-3">
                         {parqQuestions.map((q, idx) => (
                             <div key={q.key} className="flex items-start gap-4 p-3 bg-dark-200 rounded-lg">
                                 <span className="text-gray-500 text-sm mt-1">{idx + 1}.</span>
-                                <p className="flex-1 text-sm text-gray-300">{q.label}</p>
+                                <p className="flex-1 text-sm text-gray-300">{t(q.labelKey)}</p>
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
@@ -219,7 +221,7 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                                             : 'bg-dark-100 text-gray-500 hover:text-gray-300'
                                             }`}
                                     >
-                                        Evet
+                                        {t('common.yes')}
                                     </button>
                                     <button
                                         type="button"
@@ -229,7 +231,7 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
                                             : 'bg-dark-100 text-gray-500 hover:text-gray-300'
                                             }`}
                                     >
-                                        Hayır
+                                        {t('common.no')}
                                     </button>
                                 </div>
                             </div>
@@ -242,12 +244,12 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
             <Card>
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-white">2. Postür Analizi</h3>
+                        <h3 className="text-lg font-semibold text-white">2. {t('assessment.postureTitle')}</h3>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${scoreLevel.bg} ${scoreLevel.color}`}>
-                            {postureScore} Puan - {scoreLevel.label}
+                            {postureScore} {t('assessment.point')} - {t(scoreLevel.labelKey)}
                         </span>
                     </div>
-                    <p className="text-sm text-gray-400">Kötü (1) | Orta (2) | İyi (3)</p>
+                    <p className="text-sm text-gray-400">{t('assessment.postureDescription')}</p>
                     <ScoreRow items={postureItems} />
                 </div>
             </Card>
@@ -255,29 +257,29 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
             {/* Movement Tests */}
             <Card>
                 <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-white">3. Hareket Testleri</h3>
+                    <h3 className="text-lg font-semibold text-white">3. {t('assessment.movementTitle')}</h3>
 
                     {/* Push Up */}
                     <div>
-                        <h4 className="text-md font-medium text-primary mb-3">Push Up / Core</h4>
+                        <h4 className="text-md font-medium text-primary mb-3">{t('assessment.pushupTitle')}</h4>
                         <ScoreRow items={pushupItems} />
                     </div>
 
                     {/* Squat */}
                     <div>
-                        <h4 className="text-md font-medium text-primary mb-3">Squat Test</h4>
+                        <h4 className="text-md font-medium text-primary mb-3">{t('assessment.squatTitle')}</h4>
                         <ScoreRow items={squatItems} />
                     </div>
 
                     {/* Balance */}
                     <div>
-                        <h4 className="text-md font-medium text-primary mb-3">Single Leg Balance</h4>
+                        <h4 className="text-md font-medium text-primary mb-3">{t('assessment.balanceTitle')}</h4>
                         <ScoreRow items={balanceItems} />
                     </div>
 
                     {/* Shoulder */}
                     <div>
-                        <h4 className="text-md font-medium text-primary mb-3">Omuz Mobilite</h4>
+                        <h4 className="text-md font-medium text-primary mb-3">{t('assessment.shoulderTitle')}</h4>
                         <ScoreRow items={shoulderItems} />
                     </div>
                 </div>
@@ -286,11 +288,11 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
             {/* Notes */}
             <Card>
                 <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-white">Notlar</h3>
+                    <h3 className="text-lg font-semibold text-white">{t('assessment.notesTitle')}</h3>
                     <textarea
                         value={formData.notes}
                         onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Ek notlar..."
+                        placeholder={t('assessment.notesPlaceholder')}
                         className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
                         rows={3}
                     />
@@ -299,7 +301,7 @@ export default function AssessmentForm({ assessment, onSave, isLoading }: Assess
 
             {/* Submit Button */}
             <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Kaydediliyor...' : (assessment ? 'Güncelle' : 'Değerlendirmeyi Kaydet')}
+                {isLoading ? t('common.saving') : (assessment ? t('common.update') : t('assessment.saveAssessment'))}
             </Button>
         </form>
     );
