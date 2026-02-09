@@ -88,6 +88,16 @@ body {
   .badge-cancelled {
     @apply bg-gray-500/20 text-gray-400;
   }
+
+  /* Hide scrollbar for horizontal tabs */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Page transitions */
