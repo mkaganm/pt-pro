@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, Edit2, Trash2, Clock, User } from 'lucide-react';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
 import TimePicker from '../components/common/TimePicker';
-import SessionCard from '../components/sessions/SessionCard';
+// SessionCard removed - using inline cards with edit/delete buttons
 import StatusBadge from '../components/common/StatusBadge';
 import { useSessionStore } from '../store/useSessionStore';
 import { useClientStore } from '../store/useClientStore';
-import type { SessionStatus } from '../types';
+import type { Session, SessionStatus } from '../types';
+import { sessionsApi } from '../api/endpoints';
+import Card from '../components/common/Card';
 
 export default function Sessions() {
     const { t } = useTranslation();
@@ -20,6 +22,7 @@ export default function Sessions() {
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+    const [editingSession, setEditingSession] = useState<Session | null>(null);
 
     // Separate date and time states
     const [formData, setFormData] = useState({
@@ -41,35 +44,6 @@ export default function Sessions() {
         ? sessions
         : sessions.filter((s) => s.status === statusFilter);
 
-    const handleAddSession = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!formData.date || !formData.time) {
-            return;
-        }
-
-        try {
-            // Combine date and time into ISO string
-            const scheduledAt = new Date(`${formData.date}T${formData.time}:00`).toISOString();
-
-            await createSession({
-                client_id: formData.client_id,
-                scheduled_at: scheduledAt,
-                duration_minutes: formData.duration_minutes,
-                notes: formData.notes,
-            });
-            setIsAddModalOpen(false);
-            setFormData({
-                client_id: '',
-                date: '',
-                time: '',
-                duration_minutes: 60,
-                notes: '',
-            });
-        } catch (error) {
-            console.error('Failed to create session:', error);
-        }
-    };
 
     const handleStatusUpdate = async (status: SessionStatus) => {
         if (!selectedSessionId) return;
@@ -85,6 +59,71 @@ export default function Sessions() {
     const openStatusModal = (sessionId: string) => {
         setSelectedSessionId(sessionId);
         setIsStatusModalOpen(true);
+    };
+
+    const handleEditSession = (session: Session) => {
+        const scheduledDate = new Date(session.scheduled_at);
+        const dateStr = scheduledDate.toISOString().split('T')[0];
+        const timeStr = scheduledDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+        setFormData({
+            client_id: session.client_id,
+            date: dateStr,
+            time: timeStr,
+            duration_minutes: session.duration_minutes,
+            notes: session.notes || '',
+        });
+        setEditingSession(session);
+        setIsAddModalOpen(true);
+    };
+
+    const handleDeleteSession = async (sessionId: string) => {
+        if (!confirm(t('common.confirmDelete'))) return;
+        try {
+            await sessionsApi.delete(sessionId);
+            fetchSessions();
+        } catch (error) {
+            console.error('Failed to delete session:', error);
+        }
+    };
+
+    const handleAddOrUpdateSession = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!formData.date || !formData.time) {
+            return;
+        }
+
+        try {
+            const scheduledAt = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+
+            if (editingSession) {
+                await sessionsApi.update(editingSession.id, {
+                    scheduled_at: scheduledAt,
+                    duration_minutes: formData.duration_minutes,
+                    notes: formData.notes,
+                });
+            } else {
+                await createSession({
+                    client_id: formData.client_id,
+                    scheduled_at: scheduledAt,
+                    duration_minutes: formData.duration_minutes,
+                    notes: formData.notes,
+                });
+            }
+            setIsAddModalOpen(false);
+            setEditingSession(null);
+            setFormData({
+                client_id: '',
+                date: '',
+                time: '',
+                duration_minutes: 60,
+                notes: '',
+            });
+            fetchSessions();
+        } catch (error) {
+            console.error('Failed to save session:', error);
+        }
     };
 
     const getStatusLabel = (status: SessionStatus | 'all') => {
@@ -151,22 +190,69 @@ export default function Sessions() {
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {filteredSessions.map((session) => (
-                        <div key={session.id} onClick={() => openStatusModal(session.id)}>
-                            <SessionCard session={session} />
-                        </div>
-                    ))}
+                    {filteredSessions.map((session) => {
+                        const scheduledDate = new Date(session.scheduled_at);
+                        const timeStr = scheduledDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                        const dateStr = scheduledDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
+                        return (
+                            <Card key={session.id}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => openStatusModal(session.id)}>
+                                        <div className="text-center min-w-[60px]">
+                                            <p className="text-xl font-bold text-white">{timeStr}</p>
+                                            <p className="text-xs text-gray-500">{dateStr}</p>
+                                        </div>
+                                        <div className="w-px h-12 bg-dark-100" />
+                                        <div className="flex items-center gap-3">
+                                            <User className="w-4 h-4 text-gray-500" />
+                                            <span className="text-white">{session.client ? `${session.client.first_name} ${session.client.last_name}` : 'N/A'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Clock className="w-4 h-4 text-gray-500" />
+                                            <span className="text-sm text-gray-400">{session.duration_minutes} min</span>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                            session.status === 'cancelled' ? 'bg-gray-500/20 text-gray-400' :
+                                                session.status === 'no_show' ? 'bg-red-500/20 text-red-400' :
+                                                    'bg-blue-500/20 text-blue-400'
+                                            }`}>
+                                            {t(`sessions.status.${session.status}`)}
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleEditSession(session); }}
+                                            className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-dark-200 transition-colors"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
+                                            className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-dark-200 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
 
             {/* Add Session Modal */}
             <Modal
                 isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                title={t('sessions.addSession')}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                    setEditingSession(null);
+                    setFormData({ client_id: '', date: '', time: '', duration_minutes: 60, notes: '' });
+                }}
+                title={editingSession ? t('sessions.editSession') : t('sessions.addSession')}
                 size="md"
             >
-                <form onSubmit={handleAddSession} className="space-y-4">
+                <form onSubmit={handleAddOrUpdateSession} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                             {t('sessions.selectClient')}

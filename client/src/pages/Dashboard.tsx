@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Calendar, TrendingUp, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Calendar, TrendingUp, Clock, Edit2, Trash2 } from 'lucide-react';
 import Card from '../components/common/Card';
-import SessionCard from '../components/sessions/SessionCard';
 import { useClientStore } from '../store/useClientStore';
 import { useSessionStore } from '../store/useSessionStore';
+import { sessionsApi } from '../api/endpoints';
 
 export default function Dashboard() {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const { clients, fetchClients } = useClientStore();
     const { sessions, fetchSessions } = useSessionStore();
 
@@ -60,6 +62,63 @@ export default function Dashboard() {
         { label: t('sessions.noShow'), value: weeklyNoShow, icon: Clock, color: 'text-red-400' },
     ];
 
+    const handleDeleteSession = async (sessionId: string) => {
+        if (!confirm(t('common.confirmDelete'))) return;
+        try {
+            await sessionsApi.delete(sessionId);
+            fetchSessions();
+        } catch (error) {
+            console.error('Failed to delete session:', error);
+        }
+    };
+
+    const renderSessionCard = (session: typeof sessions[0]) => {
+        const scheduledDate = new Date(session.scheduled_at);
+        const timeStr = scheduledDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = scheduledDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
+        return (
+            <Card key={session.id}>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                        <div className="text-center min-w-[60px]">
+                            <p className="text-xl font-bold text-white">{timeStr}</p>
+                            <p className="text-xs text-gray-500">{dateStr}</p>
+                        </div>
+                        <div className="w-px h-12 bg-dark-100" />
+                        <div className="flex-1">
+                            <p className="text-white font-medium">
+                                {session.client ? `${session.client.first_name} ${session.client.last_name}` : 'N/A'}
+                            </p>
+                            <p className="text-sm text-gray-400">{session.duration_minutes} min</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                session.status === 'cancelled' ? 'bg-gray-500/20 text-gray-400' :
+                                    session.status === 'no_show' ? 'bg-red-500/20 text-red-400' :
+                                        'bg-blue-500/20 text-blue-400'
+                            }`}>
+                            {t(`sessions.status.${session.status}`)}
+                        </span>
+                    </div>
+                    <div className="flex gap-2 ml-2">
+                        <button
+                            onClick={() => navigate('/sessions')}
+                            className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-dark-200 transition-colors"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => handleDeleteSession(session.id)}
+                            className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-dark-200 transition-colors"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </Card>
+        );
+    };
+
     return (
         <div className="space-y-6 pb-20 md:pb-0">
             {/* Header */}
@@ -101,9 +160,7 @@ export default function Dashboard() {
                     </Card>
                 ) : (
                     <div className="space-y-3">
-                        {todaySessions.map((session) => (
-                            <SessionCard key={session.id} session={session} />
-                        ))}
+                        {todaySessions.map(renderSessionCard)}
                     </div>
                 )}
             </div>
@@ -117,9 +174,7 @@ export default function Dashboard() {
                     </Card>
                 ) : (
                     <div className="space-y-3">
-                        {upcomingSessions.map((session) => (
-                            <SessionCard key={session.id} session={session} />
-                        ))}
+                        {upcomingSessions.map(renderSessionCard)}
                     </div>
                 )}
             </div>
