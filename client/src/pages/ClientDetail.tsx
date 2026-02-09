@@ -790,7 +790,7 @@ export default function ClientDetail() {
                 title={t('clients.addSession')}
             >
                 <form onSubmit={handleAddSession} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                             label={t('sessions.date')}
                             type="date"
