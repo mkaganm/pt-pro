@@ -21,7 +21,7 @@ import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
 import TimePicker from '../components/common/TimePicker';
-import SessionCard from '../components/sessions/SessionCard';
+// SessionCard removed - using inline cards with edit/delete buttons
 import AssessmentForm from '../components/assessment/AssessmentForm';
 import { useClientStore } from '../store/useClientStore';
 import { sessionsApi, clientsApi, measurementsApi, assessmentsApi, photoGroupsApi } from '../api/endpoints';
@@ -43,6 +43,7 @@ export default function ClientDetail() {
     const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
     const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
     const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
+    const [editingSession, setEditingSession] = useState<Session | null>(null);
     const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
     const [isSavingAssessment, setIsSavingAssessment] = useState(false);
     const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
@@ -195,24 +196,63 @@ export default function ClientDetail() {
         return { labelKey: 'assessment.scoreGood', color: 'text-green-400', bg: 'bg-green-500/20' };
     };
 
-    const handleAddSession = async (e: React.FormEvent) => {
+    const handleAddOrUpdateSession = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!sessionForm.date || !sessionForm.time) return;
 
         try {
             const scheduledAt = new Date(`${sessionForm.date}T${sessionForm.time}:00`).toISOString();
-            await sessionsApi.create({
-                client_id: id!,
-                scheduled_at: scheduledAt,
-                duration_minutes: sessionForm.duration_minutes,
-                notes: sessionForm.notes,
-            });
+
+            if (editingSession) {
+                // Update existing session
+                await sessionsApi.update(editingSession.id, {
+                    scheduled_at: scheduledAt,
+                    duration_minutes: sessionForm.duration_minutes,
+                    notes: sessionForm.notes,
+                });
+            } else {
+                // Create new session
+                await sessionsApi.create({
+                    client_id: id!,
+                    scheduled_at: scheduledAt,
+                    duration_minutes: sessionForm.duration_minutes,
+                    notes: sessionForm.notes,
+                });
+            }
+
             setIsSessionModalOpen(false);
+            setEditingSession(null);
             setSessionForm({ date: '', time: '', duration_minutes: 60, notes: '' });
             loadSessions();
             fetchClient(id!);
         } catch (error) {
-            console.error('Failed to create session:', error);
+            console.error('Failed to save session:', error);
+        }
+    };
+
+    const handleEditSession = (session: Session) => {
+        const scheduledDate = new Date(session.scheduled_at);
+        const dateStr = scheduledDate.toISOString().split('T')[0];
+        const timeStr = scheduledDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+        setSessionForm({
+            date: dateStr,
+            time: timeStr,
+            duration_minutes: session.duration_minutes,
+            notes: session.notes || '',
+        });
+        setEditingSession(session);
+        setIsSessionModalOpen(true);
+    };
+
+    const handleDeleteSession = async (sessionId: string) => {
+        if (!confirm(t('common.confirmDelete'))) return;
+        try {
+            await sessionsApi.delete(sessionId);
+            loadSessions();
+            fetchClient(id!);
+        } catch (error) {
+            console.error('Failed to delete session:', error);
         }
     };
 
@@ -468,9 +508,49 @@ export default function ClientDetail() {
                         </Card>
                     ) : (
                         <div className="space-y-3">
-                            {sessions.map((session) => (
-                                <SessionCard key={session.id} session={session} showClient={false} />
-                            ))}
+                            {sessions.map((session) => {
+                                const scheduledDate = new Date(session.scheduled_at);
+                                const timeStr = scheduledDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                                const dateStr = scheduledDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
+                                return (
+                                    <Card key={session.id}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-center min-w-[60px]">
+                                                    <p className="text-xl font-bold text-white">{timeStr}</p>
+                                                    <p className="text-xs text-gray-500">{dateStr}</p>
+                                                </div>
+                                                <div className="w-px h-12 bg-dark-100" />
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-sm text-gray-400">{session.duration_minutes} min</span>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                                        session.status === 'cancelled' ? 'bg-gray-500/20 text-gray-400' :
+                                                            session.status === 'no_show' ? 'bg-red-500/20 text-red-400' :
+                                                                'bg-blue-500/20 text-blue-400'
+                                                        }`}>
+                                                        {t(`sessions.status.${session.status}`)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleEditSession(session)}
+                                                    className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-dark-200 transition-colors"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteSession(session.id)}
+                                                    className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-dark-200 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -783,13 +863,17 @@ export default function ClientDetail() {
                 </div>
             )}
 
-            {/* Add Session Modal */}
+            {/* Add/Edit Session Modal */}
             <Modal
                 isOpen={isSessionModalOpen}
-                onClose={() => setIsSessionModalOpen(false)}
-                title={t('clients.addSession')}
+                onClose={() => {
+                    setIsSessionModalOpen(false);
+                    setEditingSession(null);
+                    setSessionForm({ date: '', time: '', duration_minutes: 60, notes: '' });
+                }}
+                title={editingSession ? t('sessions.editSession') : t('clients.addSession')}
             >
-                <form onSubmit={handleAddSession} className="space-y-4">
+                <form onSubmit={handleAddOrUpdateSession} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                             label={t('sessions.date')}
@@ -828,7 +912,7 @@ export default function ClientDetail() {
                             {t('common.cancel')}
                         </Button>
                         <Button type="submit" className="flex-1">
-                            {t('common.add')}
+                            {editingSession ? t('common.save') : t('common.add')}
                         </Button>
                     </div>
                 </form>
