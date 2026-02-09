@@ -82,6 +82,7 @@
     "sessions": {
         "title": "Sessions",
         "addSession": "Add Session",
+        "editSession": "Edit Session",
         "allStatuses": "All Statuses",
         "noSessions": "No sessions yet",
         "noResults": "No sessions found matching the filter",
