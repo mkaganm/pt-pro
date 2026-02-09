@@ -401,10 +401,10 @@ export default function ClientDetail() {
             </Card>
 
             {/* Tabs */}
-            <div className="flex gap-2 border-b border-dark-100">
+            <div className="flex gap-2 border-b border-dark-100 overflow-x-auto scrollbar-hide">
                 <button
                     onClick={() => setActiveTab('sessions')}
-                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'sessions'
+                    className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === 'sessions'
                         ? 'text-primary border-b-2 border-primary'
                         : 'text-gray-400 hover:text-white'
                         }`}
@@ -416,7 +416,7 @@ export default function ClientDetail() {
                 </button>
                 <button
                     onClick={() => setActiveTab('measurements')}
-                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'measurements'
+                    className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === 'measurements'
                         ? 'text-primary border-b-2 border-primary'
                         : 'text-gray-400 hover:text-white'
                         }`}
@@ -428,7 +428,7 @@ export default function ClientDetail() {
                 </button>
                 <button
                     onClick={() => setActiveTab('assessment')}
-                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'assessment'
+                    className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === 'assessment'
                         ? 'text-primary border-b-2 border-primary'
                         : 'text-gray-400 hover:text-white'
                         }`}
@@ -440,7 +440,7 @@ export default function ClientDetail() {
                 </button>
                 <button
                     onClick={() => setActiveTab('photos')}
-                    className={`px-4 py-3 font-medium transition-colors ${activeTab === 'photos'
+                    className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === 'photos'
                         ? 'text-primary border-b-2 border-primary'
                         : 'text-gray-400 hover:text-white'
                         }`}
