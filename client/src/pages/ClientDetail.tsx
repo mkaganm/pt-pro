@@ -56,6 +56,7 @@ export default function ClientDetail() {
         notes: '',
     });
     const [measurementForm, setMeasurementForm] = useState<CreateMeasurementRequest>({
+        title: '',
         weight_kg: undefined,
         neck_cm: undefined,
         shoulder_cm: undefined,
@@ -128,7 +129,7 @@ export default function ClientDetail() {
                 formData.append('notes', photoNotes);
             }
             await clientsApi.uploadPhotos(id!, formData);
-            loadPhotoGroups();
+            await loadPhotoGroups();
             setSelectedPhotos([]);
             setPhotoNotes('');
         } catch (error) {
@@ -295,6 +296,7 @@ export default function ClientDetail() {
     const handleEditMeasurement = (measurement: Measurement) => {
         setEditingMeasurement(measurement);
         setMeasurementForm({
+            title: measurement.title || '',
             weight_kg: measurement.weight_kg,
             neck_cm: measurement.neck_cm,
             shoulder_cm: measurement.shoulder_cm,
@@ -323,6 +325,7 @@ export default function ClientDetail() {
     const handleOpenMeasurementModal = () => {
         setEditingMeasurement(null);
         setMeasurementForm({
+            title: '',
             weight_kg: undefined,
             neck_cm: undefined,
             shoulder_cm: undefined,
@@ -575,9 +578,14 @@ export default function ClientDetail() {
                                 <Card key={measurement.id}>
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center border-b border-dark-100 pb-2">
-                                            <p className="text-sm font-medium text-primary">
-                                                {new Date(measurement.measured_at).toLocaleDateString('tr-TR')}
-                                            </p>
+                                            <div>
+                                                {measurement.title && (
+                                                    <p className="text-lg font-bold text-white mb-1">{measurement.title}</p>
+                                                )}
+                                                <p className="text-sm font-medium text-primary">
+                                                    {new Date(measurement.measured_at).toLocaleDateString('tr-TR')}
+                                                </p>
+                                            </div>
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleEditMeasurement(measurement)}
@@ -929,6 +937,14 @@ export default function ClientDetail() {
                 size="lg"
             >
                 <form onSubmit={handleAddOrUpdateMeasurement} className="space-y-4">
+                    <div className="space-y-4">
+                        <Input
+                            label={t('measurements.title')}
+                            value={measurementForm.title || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, title: e.target.value })}
+                            placeholder={t('measurements.title')}
+                        />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label={t('measurements.weight')}

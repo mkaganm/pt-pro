@@ -12,8 +12,9 @@ import (
 type Measurement struct {
 	ID         uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	ClientID   uuid.UUID      `gorm:"type:uuid;not null;index" json:"client_id"`
-	WeightKg   *float64       `json:"weight_kg,omitempty"`    // Kilo
-	NeckCm     *float64       `json:"neck_cm,omitempty"`      // Boyun
+	Title      string         `gorm:"type:varchar(255)" json:"title,omitempty"` // Başlık
+	WeightKg   *float64       `json:"weight_kg,omitempty"`                      // Kilo
+	NeckCm     *float64       `json:"neck_cm,omitempty"`                        // Boyun
 	ShoulderCm *float64       `json:"shoulder_cm,omitempty"`  // Omuz
 	ChestCm    *float64       `json:"chest_cm,omitempty"`     // Göğüs
 	WaistCm    *float64       `json:"waist_cm,omitempty"`     // Bel
@@ -33,6 +34,7 @@ type Measurement struct {
 
 // CreateMeasurementRequest represents the request body for creating a measurement
 type CreateMeasurementRequest struct {
+	Title      string    `json:"title"`
 	WeightKg   *float64  `json:"weight_kg"`
 	NeckCm     *float64  `json:"neck_cm"`
 	ShoulderCm *float64  `json:"shoulder_cm"`

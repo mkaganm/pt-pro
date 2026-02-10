@@ -94,14 +94,17 @@
         "dateTime": "Tarih ve Saat",
         "duration": "Süre (dakika)",
         "notes": "Notlar",
-        "status": "Durum",
-        "updateStatus": "Durumu Güncelle",
-        "scheduled": "Planlandı",
-        "completed": "Tamamlandı",
-        "noShow": "Gelmedi",
-        "cancelled": "İptal Edildi"
+        "status": {
+            "title": "Durum",
+            "scheduled": "Planlandı",
+            "completed": "Tamamlandı",
+            "noShow": "Gelmedi",
+            "cancelled": "İptal Edildi"
+        },
+        "updateStatus": "Durumu Güncelle"
     },
     "measurements": {
+        "title": "Başlık (Örn: Başlangıç, 1. Ay)",
         "weight": "Kilo (kg)",
         "neck": "Boyun (cm)",
         "shoulder": "Omuz (cm)",
