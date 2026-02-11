@@ -145,6 +145,9 @@ func main() {
 			clients.GET("/:id/photos", photoHandler.GetPhotoGroups)
 			clients.POST("/:id/photos", photoHandler.UploadPhotos)
 
+			// Proxy route for photos
+			api.GET("/proxy/photos/*key", photoHandler.ProxyPhoto)
+
 			// Photo group routes
 			photoGroups := protected.Group("/photo-groups")
 			{
