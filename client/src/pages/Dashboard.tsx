@@ -33,13 +33,16 @@ export default function Dashboard() {
         return sessionDate >= today && sessionDate < tomorrow;
     });
 
-    // Get upcoming sessions (next 5, after today)
-    const upcomingSessions = sessions
+    // Get all future sessions (sorted)
+    const allFutureSessions = sessions
         .filter((session) => {
             const sessionDate = new Date(session.scheduled_at);
-            return sessionDate >= tomorrow && session.status === 'scheduled';
+            return sessionDate >= tomorrow;
         })
-        .slice(0, 5);
+        .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+
+    // Upcoming sessions (limit to 5 for now, but can be expanded)
+    const upcomingSessions = allFutureSessions.slice(0, 5);
 
     // Weekly stats
     const weekStart = new Date(today);
@@ -59,7 +62,7 @@ export default function Dashboard() {
         { label: t('dashboard.totalClients'), value: totalClients, icon: Users, color: 'text-blue-400' },
         { label: t('dashboard.totalSessions'), value: totalSessions, icon: Calendar, color: 'text-primary' },
         { label: t('dashboard.weeklyStats'), value: weeklyCompleted, icon: TrendingUp, color: 'text-green-400' },
-        { label: t('sessions.noShow'), value: weeklyNoShow, icon: Clock, color: 'text-red-400' },
+        { label: t('sessions.status.noShow'), value: weeklyNoShow, icon: Clock, color: 'text-red-400' },
     ];
 
     const handleDeleteSession = async (sessionId: string) => {
@@ -165,16 +168,24 @@ export default function Dashboard() {
                 )}
             </div>
 
-            {/* Upcoming Sessions */}
+            {/* All Future Sessions */}
             <div>
-                <h2 className="text-lg font-semibold text-white mb-4">{t('dashboard.upcomingSessions')}</h2>
-                {upcomingSessions.length === 0 ? (
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-white">{t('dashboard.upcomingSessions')}</h2>
+                    <button 
+                        onClick={() => navigate('/sessions')}
+                        className="text-sm text-primary hover:text-primary/80 transition-colors"
+                    >
+                        {t('common.viewAll')}
+                    </button>
+                </div>
+                {allFutureSessions.length === 0 ? (
                     <Card className="p-6 text-center">
                         <p className="text-gray-400">{t('dashboard.noUpcoming')}</p>
                     </Card>
                 ) : (
                     <div className="space-y-3">
-                        {upcomingSessions.map(renderSessionCard)}
+                        {allFutureSessions.map(renderSessionCard)}
                     </div>
                 )}
             </div>

@@ -1,5 +1,6 @@
 {
     "common": {
+        "viewAll": "Hepsini Gör",
         "save": "Kaydet",
         "cancel": "İptal",
         "delete": "Sil",
