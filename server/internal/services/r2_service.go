@@ -76,6 +76,24 @@ func (s *R2Service) UploadFile(ctx context.Context, file io.Reader, fileName str
 	return fmt.Sprintf("https://%s.r2.cloudflarestorage.com/%s", s.bucket, key), nil
 }
 
+// GetFile returns a file stream from R2
+func (s *R2Service) GetFile(ctx context.Context, key string) (io.ReadCloser, string, error) {
+	output, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to get file: %w", err)
+	}
+
+	contentType := "application/octet-stream"
+	if output.ContentType != nil {
+		contentType = *output.ContentType
+	}
+
+	return output.Body, contentType, nil
+}
+
 // DeleteFile deletes a file from R2
 func (s *R2Service) DeleteFile(ctx context.Context, url string) error {
 	// Extract key from URL

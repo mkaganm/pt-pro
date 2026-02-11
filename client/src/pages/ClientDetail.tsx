@@ -850,13 +850,13 @@ export default function ClientDetail() {
                                             {group.photos.map((photo) => (
                                                 <a
                                                     key={photo.id}
-                                                    href={photo.url}
+                                                    href={`/api/v1/proxy/photos/${photo.url.split('/').pop()}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="aspect-square rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
                                                 >
                                                     <img
-                                                        src={photo.url}
+                                                        src={`/api/v1/proxy/photos/${photo.url.split('/').pop()}`}
                                                         alt={photo.file_name}
                                                         className="w-full h-full object-cover"
                                                     />

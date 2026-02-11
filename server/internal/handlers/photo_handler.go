@@ -156,6 +156,38 @@ func (h *PhotoHandler) UploadPhotos(c *gin.Context) {
 	c.JSON(http.StatusCreated, photoGroup)
 }
 
+// ProxyPhoto proxies image requests to R2 or returns local file
+func (h *PhotoHandler) ProxyPhoto(c *gin.Context) {
+	key := c.Param("key")
+	if key == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Key is required"})
+		return
+	}
+
+	// Remove leading slash if present (Gin wildcard includes it)
+	if len(key) > 0 && key[0] == '/' {
+		key = key[1:]
+	}
+
+	// Add 'photos/' prefix if not present (assuming our storage structure)
+	fullKey := "photos/" + key
+
+	// Get file stream from R2
+	body, contentType, err := h.r2Service.GetFile(c.Request.Context(), fullKey)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Photo not found"})
+		return
+	}
+	defer body.Close()
+
+	// Set headers
+	c.Header("Content-Type", contentType)
+	c.Header("Cache-Control", "public, max-age=31536000") // Cache for 1 year
+
+	// Stream the body to response
+	c.DataFromReader(http.StatusOK, -1, contentType, body, nil)
+}
+
 // DeletePhotoGroup deletes a photo group and its photos
 func (h *PhotoHandler) DeletePhotoGroup(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
