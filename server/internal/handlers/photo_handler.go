@@ -164,6 +164,11 @@ func (h *PhotoHandler) ProxyPhoto(c *gin.Context) {
 		return
 	}
 
+	// Remove leading slash if present (Gin wildcard includes it)
+	if len(key) > 0 && key[0] == '/' {
+		key = key[1:]
+	}
+
 	// Add 'photos/' prefix if not present (assuming our storage structure)
 	fullKey := "photos/" + key
 
