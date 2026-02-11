@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Users, Calendar, TrendingUp, Clock, Edit2, Trash2 } from 'lucide-react';
+import { Users, Calendar as CalendarIcon, TrendingUp, Clock, Edit2, Trash2 } from 'lucide-react';
 import Card from '../components/common/Card';
+import SessionCalendar from '../components/common/SessionCalendar';
 import { useClientStore } from '../store/useClientStore';
 import { useSessionStore } from '../store/useSessionStore';
 import { sessionsApi } from '../api/endpoints';
@@ -12,6 +13,7 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const { clients, fetchClients } = useClientStore();
     const { sessions, fetchSessions } = useSessionStore();
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     useEffect(() => {
         fetchClients();
@@ -41,8 +43,16 @@ export default function Dashboard() {
         })
         .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
 
-    // Upcoming sessions (limit to 5 for now, but can be expanded)
-    const upcomingSessions = allFutureSessions.slice(0, 5);
+    // Selected date sessions
+    const selectedDateSessions = sessions.filter((session) => {
+        const sessionDate = new Date(session.scheduled_at);
+        const targetDate = new Date(selectedDate);
+        targetDate.setHours(0, 0, 0, 0);
+        const targetNextDay = new Date(targetDate);
+        targetNextDay.setDate(targetNextDay.getDate() + 1);
+        
+        return sessionDate >= targetDate && sessionDate < targetNextDay;
+    });
 
     // Weekly stats
     const weekStart = new Date(today);
@@ -60,7 +70,7 @@ export default function Dashboard() {
 
     const stats = [
         { label: t('dashboard.totalClients'), value: totalClients, icon: Users, color: 'text-blue-400' },
-        { label: t('dashboard.totalSessions'), value: totalSessions, icon: Calendar, color: 'text-primary' },
+        { label: t('dashboard.totalSessions'), value: totalSessions, icon: CalendarIcon, color: 'text-primary' },
         { label: t('dashboard.weeklyStats'), value: weeklyCompleted, icon: TrendingUp, color: 'text-green-400' },
         { label: t('sessions.status.noShow'), value: weeklyNoShow, icon: Clock, color: 'text-red-400' },
     ];
@@ -154,18 +164,29 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            {/* Today's Sessions */}
-            <div>
-                <h2 className="text-lg font-semibold text-white mb-4">{t('dashboard.todaySessions')}</h2>
-                {todaySessions.length === 0 ? (
-                    <Card className="p-6 text-center">
-                        <p className="text-gray-400">{t('dashboard.noSessionsToday')}</p>
-                    </Card>
-                ) : (
-                    <div className="space-y-3">
-                        {todaySessions.map(renderSessionCard)}
-                    </div>
-                )}
+            {/* Calendar & Selected Sessions */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                    <h2 className="text-lg font-semibold text-white mb-4">{t('sessions.calendar')}</h2>
+                    <SessionCalendar 
+                        sessions={sessions}
+                        onDateSelect={setSelectedDate}
+                    />
+                </div>
+                <div className="lg:col-span-2">
+                    <h2 className="text-lg font-semibold text-white mb-4">
+                        {selectedDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                    </h2>
+                    {selectedDateSessions.length === 0 ? (
+                        <Card className="p-6 text-center">
+                            <p className="text-gray-400">{t('sessions.noSessions')}</p>
+                        </Card>
+                    ) : (
+                        <div className="space-y-3">
+                            {selectedDateSessions.map(renderSessionCard)}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* All Future Sessions */}

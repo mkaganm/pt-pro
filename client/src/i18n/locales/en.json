@@ -85,6 +85,7 @@
         "addSession": "Add Session",
         "editSession": "Edit Session",
         "allStatuses": "All Statuses",
+        "calendar": "Calendar",
         "noSessions": "No sessions yet",
         "noResults": "No sessions found matching the filter",
         "selectClient": "Select Client",
