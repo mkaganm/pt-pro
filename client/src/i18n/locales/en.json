@@ -94,14 +94,17 @@
         "dateTime": "Date and Time",
         "duration": "Duration (minutes)",
         "notes": "Notes",
-        "status": "Status",
-        "updateStatus": "Update Status",
-        "scheduled": "Scheduled",
-        "completed": "Completed",
-        "noShow": "No-Show",
-        "cancelled": "Cancelled"
+        "status": {
+            "title": "Status",
+            "scheduled": "Scheduled",
+            "completed": "Completed",
+            "noShow": "No-Show",
+            "cancelled": "Cancelled"
+        },
+        "updateStatus": "Update Status"
     },
     "measurements": {
+        "title": "Title (e.g. Initial, Month 1)",
         "weight": "Weight (kg)",
         "neck": "Neck (cm)",
         "shoulder": "Shoulder (cm)",

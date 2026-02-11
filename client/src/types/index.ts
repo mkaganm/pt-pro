@@ -57,6 +57,7 @@ export interface CreateSessionRequest {
 export interface Measurement {
     id: string;
     client_id: string;
+    title?: string;
     weight_kg?: number;
     neck_cm?: number;
     shoulder_cm?: number;
@@ -73,6 +74,7 @@ export interface Measurement {
 }
 
 export interface CreateMeasurementRequest {
+    title?: string;
     weight_kg?: number;
     neck_cm?: number;
     shoulder_cm?: number;

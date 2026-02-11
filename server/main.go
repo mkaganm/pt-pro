@@ -42,6 +42,9 @@ func main() {
 	// Setup Gin router
 	router := gin.Default()
 
+	// Set max multipart memory (8MB) - increase if needed
+	router.MaxMultipartMemory = 8 << 20
+
 	// Apply middleware
 	router.Use(middleware.CORS())
 	router.Use(middleware.Logger())

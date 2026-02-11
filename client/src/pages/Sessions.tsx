@@ -63,8 +63,15 @@ export default function Sessions() {
 
     const handleEditSession = (session: Session) => {
         const scheduledDate = new Date(session.scheduled_at);
-        const dateStr = scheduledDate.toISOString().split('T')[0];
-        const timeStr = scheduledDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        // UTC tarihini yerel saat dilimine göre ayarla
+        const offset = scheduledDate.getTimezoneOffset();
+        const localDate = new Date(scheduledDate.getTime() - (offset * 60 * 1000));
+        const dateStr = localDate.toISOString().split('T')[0];
+        
+        // Saati düzgün formatta al
+        const hours = scheduledDate.getHours().toString().padStart(2, '0');
+        const minutes = scheduledDate.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
 
         setFormData({
             client_id: session.client_id,
@@ -135,7 +142,9 @@ export default function Sessions() {
             no_show: 'noShow',
             cancelled: 'cancelled',
         };
-        return t(`sessions.${keyMap[status] || status}`);
+        // Use sessions.status.key format
+        const key = keyMap[status] || status;
+        return t(`sessions.status.${key}`);
     };
 
     // Set default date to today when modal opens
@@ -198,21 +207,23 @@ export default function Sessions() {
                         return (
                             <Card key={session.id}>
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => openStatusModal(session.id)}>
-                                        <div className="text-center min-w-[60px]">
-                                            <p className="text-xl font-bold text-white">{timeStr}</p>
+                                    <div className="flex items-center gap-4 flex-1 cursor-pointer overflow-hidden" onClick={() => openStatusModal(session.id)}>
+                                        <div className="text-center min-w-[50px]">
+                                            <p className="text-lg font-bold text-white">{timeStr}</p>
                                             <p className="text-xs text-gray-500">{dateStr}</p>
                                         </div>
-                                        <div className="w-px h-12 bg-dark-100" />
-                                        <div className="flex items-center gap-3">
-                                            <User className="w-4 h-4 text-gray-500" />
-                                            <span className="text-white">{session.client ? `${session.client.first_name} ${session.client.last_name}` : 'N/A'}</span>
+                                        <div className="w-px h-12 bg-dark-100 hidden md:block" />
+                                        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 flex-1 overflow-hidden">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <User className="w-4 h-4 text-gray-500 shrink-0" />
+                                                <span className="text-white truncate">{session.client ? `${session.client.first_name} ${session.client.last_name}` : 'N/A'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                 <Clock className="w-4 h-4 text-gray-500 shrink-0 md:hidden" />
+                                                <span className="text-xs md:text-sm text-gray-400">{session.duration_minutes} min</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <Clock className="w-4 h-4 text-gray-500" />
-                                            <span className="text-sm text-gray-400">{session.duration_minutes} min</span>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                         <span className={`hidden md:inline-flex px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                                             session.status === 'cancelled' ? 'bg-gray-500/20 text-gray-400' :
                                                 session.status === 'no_show' ? 'bg-red-500/20 text-red-400' :
                                                     'bg-blue-500/20 text-blue-400'
@@ -220,19 +231,28 @@ export default function Sessions() {
                                             {t(`sessions.status.${session.status}`)}
                                         </span>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleEditSession(session); }}
-                                            className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-dark-200 transition-colors"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
-                                            className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-dark-200 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                    <div className="flex flex-col md:flex-row gap-1 md:gap-2 ml-2 items-end md:items-center justify-center">
+                                        <span className={`md:hidden px-2 py-1 rounded-full text-[10px] font-medium whitespace-nowrap text-center w-fit ${session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                            session.status === 'cancelled' ? 'bg-gray-500/20 text-gray-400' :
+                                                session.status === 'no_show' ? 'bg-red-500/20 text-red-400' :
+                                                    'bg-blue-500/20 text-blue-400'
+                                            }`}>
+                                            {t(`sessions.status.${session.status}`)}
+                                        </span>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleEditSession(session); }}
+                                                className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-dark-200 transition-colors"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
+                                                className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-dark-200 transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </Card>
