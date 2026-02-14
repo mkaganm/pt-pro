@@ -121,17 +121,32 @@ export default function ClientDetail() {
         if (selectedPhotos.length === 0) return;
         setIsUploadingPhotos(true);
         try {
-            const formData = new FormData();
-            selectedPhotos.forEach((file) => {
-                formData.append('photos', file);
-            });
-            if (photoNotes) {
-                formData.append('notes', photoNotes);
+            // Upload photos sequentially
+            const uploadedPhotos = [];
+            
+            for (let i = 0; i < selectedPhotos.length; i++) {
+                const file = selectedPhotos[i];
+                const formData = new FormData();
+                formData.append('photos', file); // Use 'photos' key as backend expects array
+                if (photoNotes && i === 0) { // Add notes only to first request or create separate logic
+                    formData.append('notes', photoNotes);
+                }
+
+                // We can use the same endpoint, it handles single file too
+                try {
+                    await clientsApi.uploadPhotos(id!, formData);
+                    uploadedPhotos.push(file.name);
+                } catch (err) {
+                    console.error(`Failed to upload ${file.name}:`, err);
+                    alert(`${t('common.error')}: ${file.name}`);
+                }
             }
-            await clientsApi.uploadPhotos(id!, formData);
-            await loadPhotoGroups();
-            setSelectedPhotos([]);
-            setPhotoNotes('');
+
+            if (uploadedPhotos.length > 0) {
+                await loadPhotoGroups();
+                setSelectedPhotos([]);
+                setPhotoNotes('');
+            }
         } catch (error) {
             console.error('Failed to upload photos:', error);
         } finally {
