@@ -121,18 +121,39 @@ export default function ClientDetail() {
         if (selectedPhotos.length === 0) return;
         setIsUploadingPhotos(true);
         try {
-            // Upload photos sequentially
+            // Sıkıştırma ayarları (Max 1MB, Max 1920px genişlik/yükseklik)
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            };
+
+            const imageCompression = (await import('browser-image-compression')).default;
+            const compressedFiles = [];
+
+            // Dosyaları sıkıştır
+            for (const file of selectedPhotos) {
+                try {
+                    console.log(`Compressing ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`);
+                    const compressedFile = await imageCompression(file, options);
+                    console.log(`Compressed ${file.name} to ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+                    compressedFiles.push(new File([compressedFile], file.name, { type: file.type }));
+                } catch (error) {
+                    console.error('Compression failed:', error);
+                    compressedFiles.push(file); // Sıkışmazsa orijinalini dene
+                }
+            }
+
+            // Backend'e tek tek gönder
             const uploadedPhotos = [];
-            
-            for (let i = 0; i < selectedPhotos.length; i++) {
-                const file = selectedPhotos[i];
+            for (let i = 0; i < compressedFiles.length; i++) {
+                const file = compressedFiles[i];
                 const formData = new FormData();
-                formData.append('photos', file); // Use 'photos' key as backend expects array
-                if (photoNotes && i === 0) { // Add notes only to first request or create separate logic
+                formData.append('photos', file);
+                if (photoNotes && i === 0) {
                     formData.append('notes', photoNotes);
                 }
 
-                // We can use the same endpoint, it handles single file too
                 try {
                     await clientsApi.uploadPhotos(id!, formData);
                     uploadedPhotos.push(file.name);
