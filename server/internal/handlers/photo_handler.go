@@ -99,13 +99,16 @@ func (h *PhotoHandler) UploadPhotos(c *gin.Context) {
 
 	// Upload each photo
 	var photos []models.Photo
+	var failedPhotos []string
+
 	for _, fileHeader := range files {
 		file, err := fileHeader.Open()
 		if err != nil {
+			failedPhotos = append(failedPhotos, fileHeader.Filename)
 			continue
 		}
-		defer file.Close()
-
+		// Don't defer file.Close() in loop, close manually
+		
 		// Check if R2 is configured
 		if h.r2Service == nil {
 			// Store locally or skip - for now we'll just record metadata
@@ -117,6 +120,7 @@ func (h *PhotoHandler) UploadPhotos(c *gin.Context) {
 				ContentType:  fileHeader.Header.Get("Content-Type"),
 			}
 			photos = append(photos, photo)
+			file.Close()
 			continue
 		}
 
@@ -128,7 +132,11 @@ func (h *PhotoHandler) UploadPhotos(c *gin.Context) {
 			fileHeader.Header.Get("Content-Type"),
 			fileHeader.Size,
 		)
+		file.Close() // Close file immediately after upload
+
 		if err != nil {
+			// fmt.Printf("Failed to upload photo %s: %v\n", fileHeader.Filename, err)
+			failedPhotos = append(failedPhotos, fileHeader.Filename)
 			continue
 		}
 
@@ -145,14 +153,27 @@ func (h *PhotoHandler) UploadPhotos(c *gin.Context) {
 	// Save photos to database
 	if len(photos) > 0 {
 		if err := h.db.Create(&photos).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save photos"})
+			// If DB save fails, we should probably delete the group?
+			// But for now just return error
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save photos info"})
 			return
 		}
+	} else if len(failedPhotos) > 0 {
+		// All failed
+		h.db.Delete(&photoGroup) // Clean up empty group
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to upload any photos",
+			"details": failedPhotos,
+		})
+		return
 	}
 
 	// Reload with photos
 	h.db.Preload("Photos").First(&photoGroup, photoGroup.ID)
 
+	// If some failed, include warning in response? (Gin JSON doesn't support custom fields easily if struct is passed)
+	// But we return 201 Created, which is good enough if at least one succeeded.
+	
 	c.JSON(http.StatusCreated, photoGroup)
 }
 
@@ -172,11 +193,19 @@ func (h *PhotoHandler) ProxyPhoto(c *gin.Context) {
 	// Add 'photos/' prefix if not present (assuming our storage structure)
 	fullKey := "photos/" + key
 
+	// DEBUG: Log the keys
+	// fmt.Printf("DEBUG ProxyPhoto: rawKey='%s', fullKey='%s'\n", c.Param("key"), fullKey)
+
 	// Get file stream from R2
 	body, contentType, err := h.r2Service.GetFile(c.Request.Context(), fullKey)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Photo not found"})
-		return
+		// Try without prefix just in case
+		// fmt.Printf("DEBUG: First attempt failed, trying raw key: '%s'\n", key)
+		body, contentType, err = h.r2Service.GetFile(c.Request.Context(), key)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Photo not found"})
+			return
+		}
 	}
 	defer body.Close()
 
