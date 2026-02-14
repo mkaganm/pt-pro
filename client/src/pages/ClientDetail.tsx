@@ -144,19 +144,33 @@ export default function ClientDetail() {
                 }
             }
 
-            // Backend'e tek tek gönder
+            // Upload photos sequentially
             const uploadedPhotos = [];
+            let groupId = null;
+            
             for (let i = 0; i < compressedFiles.length; i++) {
                 const file = compressedFiles[i];
                 const formData = new FormData();
                 formData.append('photos', file);
+                
+                // Add notes only to first request (which creates the group)
                 if (photoNotes && i === 0) {
                     formData.append('notes', photoNotes);
                 }
 
+                // If we already have a group ID, send it to add photos to that group
+                if (groupId) {
+                    formData.append('photo_group_id', groupId);
+                }
+
                 try {
-                    await clientsApi.uploadPhotos(id!, formData);
+                    const response = await clientsApi.uploadPhotos(id!, formData);
                     uploadedPhotos.push(file.name);
+                    
+                    // Capture the group ID from the first successful response
+                    if (!groupId && response.data && response.data.id) {
+                        groupId = response.data.id;
+                    }
                 } catch (err) {
                     console.error(`Failed to upload ${file.name}:`, err);
                     alert(`${t('common.error')}: ${file.name}`);
