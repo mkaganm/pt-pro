@@ -14,6 +14,8 @@ type Measurement struct {
 	ClientID   uuid.UUID      `gorm:"type:uuid;not null;index" json:"client_id"`
 	Title      string         `gorm:"type:varchar(255)" json:"title,omitempty"` // Başlık
 	WeightKg   *float64       `json:"weight_kg,omitempty"`                      // Kilo
+	HeightCm   *float64       `json:"height_cm,omitempty"`                      // Boy
+	Age        *int           `json:"age,omitempty"`                            // Yaş
 	NeckCm     *float64       `json:"neck_cm,omitempty"`                        // Boyun
 	ShoulderCm *float64       `json:"shoulder_cm,omitempty"`  // Omuz
 	ChestCm    *float64       `json:"chest_cm,omitempty"`     // Göğüs
@@ -36,6 +38,8 @@ type Measurement struct {
 type CreateMeasurementRequest struct {
 	Title      string    `json:"title"`
 	WeightKg   *float64  `json:"weight_kg"`
+	HeightCm   *float64  `json:"height_cm"`
+	Age        *int      `json:"age"`
 	NeckCm     *float64  `json:"neck_cm"`
 	ShoulderCm *float64  `json:"shoulder_cm"`
 	ChestCm    *float64  `json:"chest_cm"`
