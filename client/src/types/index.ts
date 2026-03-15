@@ -59,6 +59,8 @@ export interface Measurement {
     client_id: string;
     title?: string;
     weight_kg?: number;
+    height_cm?: number;
+    age?: number;
     neck_cm?: number;
     shoulder_cm?: number;
     chest_cm?: number;
@@ -76,6 +78,8 @@ export interface Measurement {
 export interface CreateMeasurementRequest {
     title?: string;
     weight_kg?: number;
+    height_cm?: number;
+    age?: number;
     neck_cm?: number;
     shoulder_cm?: number;
     chest_cm?: number;

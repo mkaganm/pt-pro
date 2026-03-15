@@ -1003,6 +1003,23 @@ export default function ClientDetail() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <Input
+                            label={t('clients.age')}
+                            type="number"
+                            min="1"
+                            value={measurementForm.age || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, age: parseInt(e.target.value) || undefined })}
+                        />
+                        <Input
+                            label={t('clients.height')}
+                            type="number"
+                            step="0.1"
+                            min="1"
+                            value={measurementForm.height_cm || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, height_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
                             label={t('measurements.weight')}
                             type="number"
                             step="0.01"
