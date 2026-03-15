@@ -176,7 +176,7 @@
         "noteLabel": "Note (optional)",
         "notePlaceholder": "Add a note for photos...",
         "uploadButton": "Upload Photos",
-        "maxPhotos": "Maximum 5 photos allowed",
+        "maxPhotos": "You can select as many photos as you want",
         "noPhotos": "No photos uploaded yet",
         "photoCount": "photos",
         "deleteGroup": "Delete Group"
