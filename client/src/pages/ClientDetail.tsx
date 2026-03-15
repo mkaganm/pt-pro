@@ -819,7 +819,7 @@ export default function ClientDetail() {
                                     accept="image/*"
                                     multiple
                                     onChange={(e) => {
-                                        const files = Array.from(e.target.files || []).slice(0, 5);
+                                        const files = Array.from(e.target.files || []);
                                         setSelectedPhotos(files);
                                     }}
                                     className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-dark-500 hover:file:bg-primary/80 cursor-pointer"
@@ -843,12 +843,17 @@ export default function ClientDetail() {
                                         ))}
                                     </div>
                                 )}
-                                <Input
-                                    label={t('photos.noteLabel')}
-                                    value={photoNotes}
-                                    onChange={(e) => setPhotoNotes(e.target.value)}
-                                    placeholder={t('photos.notePlaceholder')}
-                                />
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-400">
+                                        {t('photos.noteLabel')}
+                                    </label>
+                                    <textarea
+                                        value={photoNotes}
+                                        onChange={(e) => setPhotoNotes(e.target.value)}
+                                        placeholder={t('photos.notePlaceholder')}
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none h-24"
+                                    />
+                                </div>
                                 <Button
                                     onClick={handleUploadPhotos}
                                     disabled={selectedPhotos.length === 0 || isUploadingPhotos}
@@ -1073,6 +1078,17 @@ export default function ClientDetail() {
                             step="0.1"
                             value={measurementForm.left_leg_cm || ''}
                             onChange={(e) => setMeasurementForm({ ...measurementForm, left_leg_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-400">
+                            {t('sessions.notes')}
+                        </label>
+                        <textarea
+                            value={measurementForm.notes || ''}
+                            onChange={(e) => setMeasurementForm({ ...measurementForm, notes: e.target.value })}
+                            placeholder={t('sessions.notes')}
+                            className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none h-24"
                         />
                     </div>
                     <div className="flex gap-3 pt-4">

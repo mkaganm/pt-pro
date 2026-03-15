@@ -15,6 +15,8 @@ type Client struct {
 	LastName         string         `gorm:"size:100;not null" json:"last_name"`
 	Phone            string         `gorm:"size:20" json:"phone"`
 	Email            string         `gorm:"size:255" json:"email"`
+	Age              *int           `json:"age,omitempty"`
+	HeightCm         *float64       `json:"height_cm,omitempty"`
 	TotalPackageSize int            `gorm:"not null;default:0" json:"total_package_size"`
 	PackageStartDate *time.Time     `json:"package_start_date,omitempty"`
 	Notes            string         `gorm:"type:text" json:"notes,omitempty"`
@@ -43,6 +45,8 @@ type CreateClientRequest struct {
 	LastName         string     `json:"last_name" binding:"required"`
 	Phone            string     `json:"phone"`
 	Email            string     `json:"email"`
+	Age              *int       `json:"age"`
+	HeightCm         *float64   `json:"height_cm"`
 	TotalPackageSize int        `json:"total_package_size"`
 	PackageStartDate *time.Time `json:"package_start_date"`
 	Notes            string     `json:"notes"`
@@ -54,6 +58,8 @@ type UpdateClientRequest struct {
 	LastName         *string    `json:"last_name"`
 	Phone            *string    `json:"phone"`
 	Email            *string    `json:"email"`
+	Age              *int       `json:"age"`
+	HeightCm         *float64   `json:"height_cm"`
 	TotalPackageSize *int       `json:"total_package_size"`
 	PackageStartDate *time.Time `json:"package_start_date"`
 	Notes            *string    `json:"notes"`

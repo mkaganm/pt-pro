@@ -84,6 +84,8 @@ func (h *ClientHandler) Create(c *gin.Context) {
 		LastName:         req.LastName,
 		Phone:            req.Phone,
 		Email:            req.Email,
+		Age:              req.Age,
+		HeightCm:         req.HeightCm,
 		TotalPackageSize: req.TotalPackageSize,
 		PackageStartDate: req.PackageStartDate,
 		Notes:            req.Notes,
@@ -180,6 +182,12 @@ func (h *ClientHandler) Update(c *gin.Context) {
 	}
 	if req.Email != nil {
 		client.Email = *req.Email
+	}
+	if req.Age != nil {
+		client.Age = req.Age
+	}
+	if req.HeightCm != nil {
+		client.HeightCm = req.HeightCm
 	}
 	if req.TotalPackageSize != nil {
 		client.TotalPackageSize = *req.TotalPackageSize

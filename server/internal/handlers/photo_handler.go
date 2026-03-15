@@ -83,18 +83,26 @@ func (h *PhotoHandler) UploadPhotos(c *gin.Context) {
 		return
 	}
 
-	// Get notes from form
-	notes := c.PostForm("notes")
+	// Get photo group ID from form (optional)
+	groupID := c.PostForm("photo_group_id")
+	var photoGroup models.PhotoGroup
 
-	// Create photo group
-	photoGroup := models.PhotoGroup{
-		ClientID: clientID,
-		Notes:    notes,
-	}
-
-	if err := h.db.Create(&photoGroup).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create photo group"})
-		return
+	if groupID != "" {
+		// Use existing group
+		if err := h.db.First(&photoGroup, "id = ?", groupID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Photo group not found"})
+			return
+		}
+	} else {
+		// Create new photo group
+		photoGroup = models.PhotoGroup{
+			ClientID: clientID,
+			Notes:    c.PostForm("notes"),
+		}
+		if err := h.db.Create(&photoGroup).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create photo group"})
+			return
+		}
 	}
 
 	// Upload each photo
