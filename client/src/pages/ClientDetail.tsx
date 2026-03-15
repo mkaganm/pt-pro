@@ -409,8 +409,9 @@ export default function ClientDetail() {
         );
     }
 
-    const remainingPercentage = selectedClient.total_package_size > 0
-        ? (selectedClient.remaining_sessions / selectedClient.total_package_size) * 100
+    const usedSessions = selectedClient.total_package_size - selectedClient.remaining_sessions;
+    const usedPercentage = selectedClient.total_package_size > 0
+        ? (usedSessions / selectedClient.total_package_size) * 100
         : 0;
 
     return (
@@ -460,13 +461,13 @@ export default function ClientDetail() {
                                 <span className="text-sm text-gray-400">{t('clients.packageSize')}</span>
                             </div>
                             <span className="text-sm font-medium text-white">
-                                {selectedClient.remaining_sessions} / {selectedClient.total_package_size}
+                                {usedSessions} / {selectedClient.total_package_size}
                             </span>
                         </div>
                         <div className="w-full h-3 bg-dark-100 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-primary transition-all duration-300"
-                                style={{ width: `${remainingPercentage}%` }}
+                                style={{ width: `${usedPercentage}%` }}
                             />
                         </div>
                     </div>

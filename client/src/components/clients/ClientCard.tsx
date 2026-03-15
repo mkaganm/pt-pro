@@ -10,13 +10,14 @@ interface ClientCardProps {
 export default function ClientCard({ client }: ClientCardProps) {
     const navigate = useNavigate();
 
-    const remainingPercentage = client.total_package_size > 0
-        ? (client.remaining_sessions / client.total_package_size) * 100
+    const usedSessions = client.total_package_size - client.remaining_sessions;
+    const usedPercentage = client.total_package_size > 0
+        ? (usedSessions / client.total_package_size) * 100
         : 0;
 
     const getProgressColor = () => {
-        if (remainingPercentage > 50) return 'bg-green-500';
-        if (remainingPercentage > 20) return 'bg-yellow-500';
+        if (usedPercentage < 50) return 'bg-green-500';
+        if (usedPercentage < 80) return 'bg-yellow-500';
         return 'bg-red-500';
     };
 
@@ -42,14 +43,14 @@ export default function ClientCard({ client }: ClientCardProps) {
                     <div className="flex items-center gap-2 mt-1">
                         <Package className="w-4 h-4 text-gray-500" />
                         <span className="text-sm text-gray-400">
-                            {client.remaining_sessions} / {client.total_package_size} sessions
+                            {usedSessions} / {client.total_package_size} sessions
                         </span>
                     </div>
                     {/* Progress bar */}
                     <div className="w-32 h-1.5 bg-dark-100 rounded-full mt-2 overflow-hidden">
                         <div
                             className={`h-full ${getProgressColor()} transition-all duration-300`}
-                            style={{ width: `${remainingPercentage}%` }}
+                            style={{ width: `${usedPercentage}%` }}
                         />
                     </div>
                 </div>
