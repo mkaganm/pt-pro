@@ -113,18 +113,36 @@ export default function Clients() {
                             required
                         />
                     </div>
-                    <Input
-                        label={t('clients.phone')}
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                    <Input
-                        label={t('auth.email')}
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('clients.phone')}
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                        <Input
+                            label={t('auth.email')}
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label={t('clients.age')}
+                            type="number"
+                            min="1"
+                            value={formData.age || ''}
+                            onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || undefined })}
+                        />
+                        <Input
+                            label={t('clients.height')}
+                            type="number"
+                            min="1"
+                            value={formData.height_cm || ''}
+                            onChange={(e) => setFormData({ ...formData, height_cm: parseFloat(e.target.value) || undefined })}
+                        />
+                    </div>
                     <Input
                         label={t('clients.packageSize')}
                         type="number"

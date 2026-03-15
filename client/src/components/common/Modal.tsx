@@ -57,7 +57,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
                 </div>
 
                 {/* Content */}
-                <div className="px-6 py-4 overflow-y-auto">
+                <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">
                     {children}
                 </div>
             </div>
