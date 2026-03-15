@@ -34,31 +34,33 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4">
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/70 animate-fade-in"
-                onClick={onClose}
-            />
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="min-h-screen px-4 flex items-center justify-center">
+                {/* Backdrop */}
+                <div
+                    className="fixed inset-0 bg-black/70 animate-fade-in"
+                    onClick={onClose}
+                />
 
-            {/* Modal */}
-            <div
-                className={`relative w-full ${sizeClasses[size]} bg-dark-300 rounded-2xl border border-dark-100 animate-slide-up max-h-[90vh] flex flex-col`}
-            >
-                {/* Header */}
-                <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-dark-100">
-                    <h2 className="text-lg font-semibold text-white">{title}</h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-200 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                {/* Modal */}
+                <div
+                    className={`relative w-full ${sizeClasses[size]} bg-dark-300 rounded-2xl border border-dark-100 animate-slide-up my-8`}
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-dark-100">
+                        <h2 className="text-lg font-semibold text-white">{title}</h2>
+                        <button
+                            onClick={onClose}
+                            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-200 transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
-                    {children}
+                    {/* Content */}
+                    <div className="px-6 py-4">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
