@@ -66,6 +66,8 @@
         "noClients": "Henüz müşteri yok. İlk müşterinizi ekleyin!",
         "noResults": "Aramanızla eşleşen müşteri bulunamadı",
         "phone": "Telefon",
+        "age": "Yaş",
+        "height": "Boy (cm)",
         "packageSize": "Paket Boyutu (Seans)",
         "remainingSessions": "Kalan Seans",
         "completedSessions": "Tamamlanan",
@@ -108,6 +110,8 @@
     "measurements": {
         "title": "Başlık (Örn: Başlangıç, 1. Ay)",
         "weight": "Kilo (kg)",
+        "height": "Boy (cm)",
+        "age": "Yaş",
         "neck": "Boyun (cm)",
         "shoulder": "Omuz (cm)",
         "chest": "Göğüs (cm)",
