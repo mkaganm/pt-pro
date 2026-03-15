@@ -108,6 +108,8 @@
     "measurements": {
         "title": "Title (e.g. Initial, Month 1)",
         "weight": "Weight (kg)",
+        "height": "Height (cm)",
+        "age": "Age",
         "neck": "Neck (cm)",
         "shoulder": "Shoulder (cm)",
         "chest": "Chest (cm)",
