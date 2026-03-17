@@ -293,7 +293,10 @@ func (h *ClientHandler) CreateMeasurement(c *gin.Context) {
 
 	measurement := models.Measurement{
 		ClientID:   id,
+		Title:      req.Title,
 		WeightKg:   req.WeightKg,
+		HeightCm:   req.HeightCm,
+		Age:        req.Age,
 		NeckCm:     req.NeckCm,
 		ShoulderCm: req.ShoulderCm,
 		ChestCm:    req.ChestCm,

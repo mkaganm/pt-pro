@@ -87,7 +87,10 @@ func (h *MeasurementHandler) Update(c *gin.Context) {
 	}
 
 	// Update fields
+	measurement.Title = req.Title
 	measurement.WeightKg = req.WeightKg
+	measurement.HeightCm = req.HeightCm
+	measurement.Age = req.Age
 	measurement.NeckCm = req.NeckCm
 	measurement.ShoulderCm = req.ShoulderCm
 	measurement.ChestCm = req.ChestCm
