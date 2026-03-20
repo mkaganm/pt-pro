@@ -29,13 +29,31 @@ export default function TimePicker({ value, onChange, onClose, isOpen }: TimePic
     useEffect(() => {
         if (isOpen && hourRef.current) {
             const hourIndex = hours.indexOf(selectedHour);
-            hourRef.current.scrollTop = hourIndex * 48 - 48;
+            setTimeout(() => {
+                if (hourRef.current) hourRef.current.scrollTop = Math.max(0, hourIndex * 48);
+            }, 10);
         }
         if (isOpen && minuteRef.current) {
             const minIndex = minutes.indexOf(selectedMinute);
-            minuteRef.current.scrollTop = minIndex * 48 - 48;
+            setTimeout(() => {
+                if (minuteRef.current) minuteRef.current.scrollTop = Math.max(0, minIndex * 48);
+            }, 10);
         }
     }, [isOpen]);
+
+    const handleHourScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const index = Math.round(e.currentTarget.scrollTop / 48);
+        if (hours[index] !== undefined && hours[index] !== selectedHour) {
+            setSelectedHour(hours[index]);
+        }
+    };
+
+    const handleMinuteScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const index = Math.round(e.currentTarget.scrollTop / 48);
+        if (minutes[index] !== undefined && minutes[index] !== selectedMinute) {
+            setSelectedMinute(minutes[index]);
+        }
+    };
 
     const handleConfirm = () => {
         const time = `${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
@@ -71,6 +89,7 @@ export default function TimePicker({ value, onChange, onClose, isOpen }: TimePic
                     {/* Hour Column */}
                     <div
                         ref={hourRef}
+                        onScroll={handleHourScroll}
                         className="h-40 overflow-y-auto scrollbar-hide relative z-10 snap-y snap-mandatory"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
@@ -98,6 +117,7 @@ export default function TimePicker({ value, onChange, onClose, isOpen }: TimePic
                     {/* Minute Column */}
                     <div
                         ref={minuteRef}
+                        onScroll={handleMinuteScroll}
                         className="h-40 overflow-y-auto scrollbar-hide relative z-10 snap-y snap-mandatory"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
