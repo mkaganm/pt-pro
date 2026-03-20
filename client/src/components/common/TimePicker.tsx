@@ -46,8 +46,8 @@ export default function TimePicker({ value, onChange, onClose, isOpen }: TimePic
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-            <div className="bg-dark-300 rounded-2xl w-80 overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="bg-dark-300 rounded-2xl w-80 overflow-hidden shadow-2xl relative">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-dark-100">
                     <span className="text-lg font-semibold text-white">Saat Seç</span>
