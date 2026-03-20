@@ -57,6 +57,8 @@ export default function ClientDetail() {
     });
     const [measurementForm, setMeasurementForm] = useState<CreateMeasurementRequest>({
         title: '',
+        age: undefined,
+        height_cm: undefined,
         weight_kg: undefined,
         neck_cm: undefined,
         shoulder_cm: undefined,
@@ -67,6 +69,7 @@ export default function ClientDetail() {
         left_arm_cm: undefined,
         right_leg_cm: undefined,
         left_leg_cm: undefined,
+        notes: '',
     });
 
     useEffect(() => {
@@ -326,6 +329,9 @@ export default function ClientDetail() {
             setIsMeasurementModalOpen(false);
             setEditingMeasurement(null);
             setMeasurementForm({
+                title: '',
+                age: undefined,
+                height_cm: undefined,
                 weight_kg: undefined,
                 neck_cm: undefined,
                 shoulder_cm: undefined,
@@ -336,6 +342,7 @@ export default function ClientDetail() {
                 left_arm_cm: undefined,
                 right_leg_cm: undefined,
                 left_leg_cm: undefined,
+                notes: '',
             });
             loadMeasurements();
         } catch (error) {
@@ -347,6 +354,8 @@ export default function ClientDetail() {
         setEditingMeasurement(measurement);
         setMeasurementForm({
             title: measurement.title || '',
+            age: measurement.age,
+            height_cm: measurement.height_cm,
             weight_kg: measurement.weight_kg,
             neck_cm: measurement.neck_cm,
             shoulder_cm: measurement.shoulder_cm,
@@ -357,6 +366,7 @@ export default function ClientDetail() {
             left_arm_cm: measurement.left_arm_cm,
             right_leg_cm: measurement.right_leg_cm,
             left_leg_cm: measurement.left_leg_cm,
+            notes: measurement.notes || '',
         });
         setIsMeasurementModalOpen(true);
     };
@@ -376,6 +386,8 @@ export default function ClientDetail() {
         setEditingMeasurement(null);
         setMeasurementForm({
             title: '',
+            age: undefined,
+            height_cm: undefined,
             weight_kg: undefined,
             neck_cm: undefined,
             shoulder_cm: undefined,
@@ -386,6 +398,7 @@ export default function ClientDetail() {
             left_arm_cm: undefined,
             right_leg_cm: undefined,
             left_leg_cm: undefined,
+            notes: '',
         });
         setIsMeasurementModalOpen(true);
     };
@@ -653,6 +666,18 @@ export default function ClientDetail() {
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                            {measurement.age && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('clients.age')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.age}</p>
+                                                </div>
+                                            )}
+                                            {measurement.height_cm && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">{t('clients.height')}</p>
+                                                    <p className="text-lg font-semibold text-white">{measurement.height_cm}</p>
+                                                </div>
+                                            )}
                                             {measurement.weight_kg && (
                                                 <div>
                                                     <p className="text-xs text-gray-500">{t('measurements.weight')}</p>
@@ -714,6 +739,12 @@ export default function ClientDetail() {
                                                 </div>
                                             )}
                                         </div>
+                                        {measurement.notes && (
+                                            <div className="pt-2 border-t border-dark-100">
+                                                <p className="text-xs text-gray-500 mb-1">{t('sessions.notes')}</p>
+                                                <p className="text-sm text-gray-300 whitespace-pre-wrap">{measurement.notes}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </Card>
                             ))}
