@@ -46,7 +46,12 @@
         "passwordMinLength": "Password (min 6 characters)",
         "passwordsDoNotMatch": "Passwords do not match",
         "loginFailed": "Login failed",
-        "registrationFailed": "Registration failed"
+        "registrationFailed": "Registration failed",
+        "termsLabel": "I have read and agree to the",
+        "termsLink": "Terms of Service & Privacy Policy",
+        "termsModalTitle": "Terms of Service and Privacy Policy",
+        "termsModalBody": "By using our app, you agree that your entered data (photos, measurements, etc.) will be stored on our system. This app is not a medical advice or diagnostic tool. The responsibility belongs entirely to you and your trainer.",
+        "acceptTerms": "Accept and Continue"
     },
     "dashboard": {
         "title": "Dashboard",

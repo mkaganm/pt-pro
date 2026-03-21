@@ -74,6 +74,8 @@ func main() {
 		{
 			// Get current user
 			protected.GET("/auth/me", authHandler.GetMe)
+			// Accept terms
+			protected.POST("/auth/terms", authHandler.AcceptTerms)
 
 			// Client routes
 			clientHandler := handlers.NewClientHandler(db)
