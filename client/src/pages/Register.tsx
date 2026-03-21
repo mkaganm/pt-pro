@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Dumbbell, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
+import Modal from '../components/common/Modal';
 import LanguageSwitcher from '../components/common/LanguageSwitcher';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -11,6 +12,7 @@ export default function Register() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { register, isLoading, error, clearError } = useAuthStore();
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -33,6 +35,7 @@ export default function Register() {
                 last_name: formData.last_name,
                 email: formData.email,
                 password: formData.password,
+                terms_accepted: true,
             });
             navigate('/');
         } catch {
@@ -124,6 +127,18 @@ export default function Register() {
                             required
                         />
 
+                        <div className="flex items-start gap-2 pt-2">
+                            <input
+                                type="checkbox"
+                                id="terms"
+                                required
+                                className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary bg-dark-200"
+                            />
+                            <label htmlFor="terms" className="text-sm text-gray-400">
+                                {t('auth.termsLabel')} <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-primary hover:underline">{t('auth.termsLink')}</button>
+                            </label>
+                        </div>
+
                         <Button
                             type="submit"
                             isLoading={isLoading}
@@ -144,6 +159,21 @@ export default function Register() {
                     </div>
                 </div>
             </div>
+
+            <Modal
+                isOpen={isTermsModalOpen}
+                onClose={() => setIsTermsModalOpen(false)}
+                title={t('auth.termsModalTitle')}
+            >
+                <div className="text-gray-300 leading-relaxed space-y-4">
+                    <p>{t('auth.termsModalBody')}</p>
+                </div>
+                <div className="mt-6">
+                    <Button onClick={() => setIsTermsModalOpen(false)} className="w-full">
+                        {t('common.close')}
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }

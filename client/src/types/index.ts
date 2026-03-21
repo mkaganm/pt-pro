@@ -113,6 +113,7 @@ export interface Trainer {
     email: string;
     first_name: string;
     last_name: string;
+    terms_accepted_at?: string;
     created_at: string;
 }
 

@@ -22,6 +22,7 @@ interface AuthStore {
     logout: () => void;
     clearError: () => void;
     checkAuth: () => Promise<void>;
+    acceptTerms: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -29,6 +30,7 @@ interface RegisterData {
     password: string;
     first_name: string;
     last_name: string;
+    terms_accepted: boolean;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -117,6 +119,20 @@ export const useAuthStore = create<AuthStore>()(
                 } catch {
                     // Token is invalid, logout
                     get().logout();
+                }
+            },
+
+            acceptTerms: async () => {
+                set({ isLoading: true, error: null });
+                try {
+                    const response = await api.post('/auth/terms');
+                    set({ trainer: response.data, isLoading: false });
+                } catch (error: any) {
+                    set({
+                        error: error.response?.data?.error || 'Failed to accept terms',
+                        isLoading: false
+                    });
+                    throw error;
                 }
             },
         }),

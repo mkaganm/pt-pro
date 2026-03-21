@@ -15,6 +15,7 @@ type Trainer struct {
 	PasswordHash string         `gorm:"size:255;not null" json:"-"`
 	FirstName    string         `gorm:"size:100;not null" json:"first_name"`
 	LastName     string         `gorm:"size:100;not null" json:"last_name"`
+	TermsAcceptedAt *time.Time    `json:"terms_accepted_at"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
@@ -25,10 +26,11 @@ type Trainer struct {
 
 // RegisterRequest represents the request body for trainer registration
 type RegisterRequest struct {
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=6"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
+	Email         string `json:"email" binding:"required,email"`
+	Password      string `json:"password" binding:"required,min=6"`
+	FirstName     string `json:"first_name" binding:"required"`
+	LastName      string `json:"last_name" binding:"required"`
+	TermsAccepted bool   `json:"terms_accepted" binding:"required"`
 }
 
 // LoginRequest represents the request body for login

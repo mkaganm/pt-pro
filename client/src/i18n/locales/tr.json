@@ -46,7 +46,12 @@
         "passwordMinLength": "Şifre (min 6 karakter)",
         "passwordsDoNotMatch": "Şifreler eşleşmiyor",
         "loginFailed": "Giriş başarısız",
-        "registrationFailed": "Kayıt başarısız"
+        "registrationFailed": "Kayıt başarısız",
+        "termsLabel": "Okudum ve onaylıyorum:",
+        "termsLink": "Kullanım Koşulları & Gizlilik Politikası",
+        "termsModalTitle": "Kullanım Koşulları ve Gizlilik Politikası",
+        "termsModalBody": "Uygulamamızı kullanarak, girdiğiniz verilerin (fotoğraflar, ölçümler vb.) sistemimizde saklanmasını kabul etmiş olursunuz. Bu uygulama tıbbi bir tavsiye veya teşhis aracı değildir. Sorumluluk tamamen size ve eğitmeninize aittir.",
+        "acceptTerms": "Kabul Et ve Devam Et"
     },
     "dashboard": {
         "title": "Panel",

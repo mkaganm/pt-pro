@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import LanguageSwitcher from '../common/LanguageSwitcher';
+import Modal from '../common/Modal';
+import Button from '../common/Button';
 
 interface LayoutProps {
     children: ReactNode;
@@ -21,8 +23,17 @@ export default function Layout({ children }: LayoutProps) {
     const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
-    const { trainer, logout } = useAuthStore();
+    const { trainer, logout, acceptTerms, isLoading } = useAuthStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+
+    useEffect(() => {
+        if (trainer && !trainer.terms_accepted_at) {
+            setShowTermsModal(true);
+        } else {
+            setShowTermsModal(false);
+        }
+    }, [trainer]);
 
     const navItems = [
         { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -35,8 +46,40 @@ export default function Layout({ children }: LayoutProps) {
         navigate('/login');
     };
 
+    const handleAcceptTerms = async () => {
+        try {
+            await acceptTerms();
+            setShowTermsModal(false);
+        } catch (error) {
+            console.error('Failed to accept terms', error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-dark">
+            {/* Terms Modal */}
+            {showTermsModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                    <div className="relative w-full max-w-lg bg-dark-300 rounded-2xl border border-dark-100 shadow-2xl flex flex-col max-h-[85vh]">
+                        <div className="flex-none px-6 py-4 border-b border-dark-100 bg-dark-300 rounded-t-2xl z-10">
+                            <h2 className="text-xl font-bold text-white">{t('auth.termsModalTitle')}</h2>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar text-gray-300 leading-relaxed">
+                            <p>{t('auth.termsModalBody')}</p>
+                        </div>
+                        <div className="flex-none px-6 py-4 border-t border-dark-100 bg-dark-300 rounded-b-2xl">
+                            <Button 
+                                onClick={handleAcceptTerms} 
+                                isLoading={isLoading} 
+                                className="w-full"
+                            >
+                                {t('auth.acceptTerms')}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:w-64 bg-dark-300 border-r border-dark-100">
                 {/* Logo */}

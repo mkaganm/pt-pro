@@ -104,10 +104,15 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// Create new trainer
+	now := time.Now()
 	trainer := models.Trainer{
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
+	}
+
+	if req.TermsAccepted {
+		trainer.TermsAcceptedAt = &now
 	}
 
 	if err := trainer.SetPassword(req.Password); err != nil {
@@ -182,6 +187,26 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Kullanıcı bulunamadı"})
 		return
 	}
+
+	c.JSON(http.StatusOK, trainer)
+}
+
+// AcceptTerms updates the terms accepted status for the authenticated trainer
+func (h *AuthHandler) AcceptTerms(c *gin.Context) {
+	trainerID, exists := c.Get("trainer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Oturum açmanız gerekiyor"})
+		return
+	}
+
+	now := time.Now()
+	if err := h.db.Model(&models.Trainer{}).Where("id = ?", trainerID).Update("terms_accepted_at", now).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Koşullar onaylanırken bir hata oluştu"})
+		return
+	}
+
+	var trainer models.Trainer
+	h.db.First(&trainer, "id = ?", trainerID)
 
 	c.JSON(http.StatusOK, trainer)
 }
