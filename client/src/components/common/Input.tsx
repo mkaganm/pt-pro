@@ -6,7 +6,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-    ({ label, error, className = '', ...props }, ref) => {
+    ({ label, error, className = '', type, ...props }, ref) => {
+        const isDateInput = type === 'date';
+
         return (
             <div className="w-full">
                 {label && (
@@ -16,9 +18,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 )}
                 <input
                     ref={ref}
-                    className={`w-full px-4 py-3 bg-dark-200 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 
-                        [color-scheme:dark] 
-                        ${error ? 'border-red-500' : 'border-dark-100'} ${className}`}
+                    type={type}
+                    className={`w-full px-4 py-3 bg-dark-200 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 [color-scheme:dark] ${isDateInput ? 'date-input-dark' : ''} ${error ? 'border-red-500' : 'border-dark-100'} ${className}`}
                     {...props}
                 />
                 {error && (

@@ -168,3 +168,35 @@ body {
 .react-datepicker__input-container input {
   @apply w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
 }
+/* Native date input dark theme normalization */
+input[type="date"].date-input-dark {
+  color-scheme: dark;
+}
+
+/* Chromium / Safari date picker icon + calendar popup button */
+input[type="date"].date-input-dark::-webkit-calendar-picker-indicator {
+  filter: invert(85%) sepia(6%) saturate(100%) hue-rotate(180deg) brightness(90%) contrast(90%);
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+input[type="date"].date-input-dark::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Keep day/month/year segments readable in dark mode */
+input[type="date"].date-input-dark::-webkit-datetime-edit,
+input[type="date"].date-input-dark::-webkit-datetime-edit-text,
+input[type="date"].date-input-dark::-webkit-datetime-edit-day-field,
+input[type="date"].date-input-dark::-webkit-datetime-edit-month-field,
+input[type="date"].date-input-dark::-webkit-datetime-edit-year-field {
+  color: #ffffff;
+}
+
+/* Firefox fallback */
+@supports not selector(input::-webkit-calendar-picker-indicator) {
+  input[type="date"].date-input-dark {
+    background-color: #1f1f1f;
+    color: #ffffff;
+  }
+}
