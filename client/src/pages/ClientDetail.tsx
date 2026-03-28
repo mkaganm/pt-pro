@@ -984,10 +984,10 @@ export default function ClientDetail() {
                             <button
                                 type="button"
                                 onClick={() => setIsTimePickerOpen(true)}
-                                className="w-full px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-left focus:outline-none focus:border-primary transition-colors"
+                                className="w-full h-[50px] px-4 py-3 bg-dark-200 border border-dark-100 rounded-lg text-left focus:outline-none focus:border-primary transition-colors flex items-center"
                             >
                                 {sessionForm.time ? (
-                                    <span className="text-primary font-semibold text-lg">{sessionForm.time}</span>
+                                    <span className="text-white font-medium">{sessionForm.time}</span>
                                 ) : (
                                     <span className="text-gray-500">{t('sessions.selectTime')}</span>
                                 )}
