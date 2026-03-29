@@ -166,7 +166,7 @@ export default function Register() {
                 title={t('auth.termsModalTitle')}
             >
                 <div className="text-gray-300 leading-relaxed space-y-4">
-                    <p>{t('auth.termsModalBody')}</p>
+                    <p className="whitespace-pre-line text-[15px] leading-7">{t('auth.termsModalBody')}</p>
                 </div>
                 <div className="mt-6">
                     <Button onClick={() => setIsTermsModalOpen(false)} className="w-full">
