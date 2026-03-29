@@ -66,7 +66,7 @@ export default function Layout({ children }: LayoutProps) {
                             <h2 className="text-xl font-bold text-white">{t('auth.termsModalTitle')}</h2>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar text-gray-300 leading-relaxed">
-                            <p>{t('auth.termsModalBody')}</p>
+                            <p className="whitespace-pre-line text-[15px] leading-7">{t('auth.termsModalBody')}</p>
                         </div>
                         <div className="flex-none px-6 py-4 border-t border-dark-100 bg-dark-300 rounded-b-2xl">
                             <Button 
